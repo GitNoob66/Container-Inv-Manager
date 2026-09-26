@@ -10,4 +10,4 @@
 <!-- LOVABLE:END -->
 
 ## TypeScript config
-- `noPropertyAccessFromIndexSignature` and `noUncheckedIndexedAccess` are off: grid and Excel rows are dynamic `Record<string, string>` maps, so those flags add ceremony without safety.
+- `noPropertyAccessFromIndexSignature`, `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` are off: grid and Excel rows are dynamic `Record<string, string>` maps, so those flags add ceremony without safety.
