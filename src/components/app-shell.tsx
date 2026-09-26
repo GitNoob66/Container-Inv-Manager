@@ -25,13 +25,13 @@ import {
 } from "@/components/ui/command";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-const centreLinks = (id: string) => [
-  { to: `/centre/${id}/inward`, label: "Inward Entry" },
-  { to: `/centre/${id}/inventory`, label: "Inventory Update" },
-  { to: `/centre/${id}/yard`, label: "Yard Positions" },
-  { to: `/centre/${id}/size-type`, label: "Size / Type Update" },
-  { to: `/centre/${id}/outward`, label: "Outward Entry" },
-  { to: `/centre/${id}/log`, label: "Master Log" },
+export const CENTRE_SECTIONS = [
+  { key: "inward", label: "Inward Entry" },
+  { key: "inventory", label: "Inventory Update" },
+  { key: "yard", label: "Yard Positions" },
+  { key: "size-type", label: "Size / Type Update" },
+  { key: "outward", label: "Outward Entry" },
+  { key: "log", label: "Master Log" },
 ];
 
 export function CentrePicker({ centreId }: { centreId?: string }) {
@@ -63,10 +63,15 @@ export function CentrePicker({ centreId }: { centreId?: string }) {
                   value={c.name}
                   onSelect={() => {
                     setOpen(false);
-                    navigate({ to: "/centre/$centreId/$section", params: { centreId: c.id, section: "inward" } });
+                    navigate({
+                      to: "/centre/$centreId/$section",
+                      params: { centreId: c.id, section: "inward" },
+                    });
                   }}
                 >
-                  <Check className={cn("mr-2 size-4", c.id === centreId ? "opacity-100" : "opacity-0")} />
+                  <Check
+                    className={cn("mr-2 size-4", c.id === centreId ? "opacity-100" : "opacity-0")}
+                  />
                   {c.name}
                 </CommandItem>
               ))}
@@ -75,33 +80,6 @@ export function CentrePicker({ centreId }: { centreId?: string }) {
         </Command>
       </PopoverContent>
     </Popover>
-  );
-}
-
-function NavItem({
-  to,
-  icon,
-  label,
-  active,
-}: {
-  to: string;
-  icon: ReactNode;
-  label: string;
-  active: boolean;
-}) {
-  return (
-    <Link
-      to={to}
-      className={cn(
-        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-        active
-          ? "bg-sidebar-primary text-sidebar-primary-foreground"
-          : "text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-      )}
-    >
-      {icon}
-      {label}
-    </Link>
   );
 }
 
@@ -117,6 +95,13 @@ export function AppShell({
   actions?: ReactNode;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navClass = (active: boolean) =>
+    cn(
+      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+      active
+        ? "bg-sidebar-primary text-sidebar-primary-foreground"
+        : "text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+    );
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -140,48 +125,38 @@ export function AppShell({
 
         {centreId ? (
           <nav className="mt-2 flex flex-col gap-0.5 border-l border-sidebar-border/60 pl-2">
-            {centreLinks(centreId).map((l) => (
+            {CENTRE_SECTIONS.map((s) => (
               <Link
-                key={l.to}
-                to={l.to}
+                key={s.key}
+                to="/centre/$centreId/$section"
+                params={{ centreId, section: s.key }}
                 className={cn(
                   "rounded-md px-3 py-1.5 text-[13px] transition-colors",
-                  pathname === l.to
+                  pathname.endsWith(`/${s.key}`)
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
                 )}
               >
-                {l.label}
+                {s.label}
               </Link>
             ))}
           </nav>
         ) : null}
 
         <div className="mt-6 flex flex-col gap-0.5">
-          <NavItem
-            to="/centres"
-            icon={<Building2 className="size-4" />}
-            label="B · Update Centres"
-            active={pathname === "/centres"}
-          />
-          <NavItem
-            to="/reports"
-            icon={<FileSpreadsheet className="size-4" />}
-            label="C · Reports"
-            active={pathname === "/reports"}
-          />
-          <NavItem
-            to="/rakes"
-            icon={<Train className="size-4" />}
-            label="D · Rake Manager"
-            active={pathname === "/rakes"}
-          />
-          <NavItem
-            to="/"
-            icon={<Warehouse className="size-4" />}
-            label="Dashboard"
-            active={pathname === "/"}
-          />
+          <Link to="/centres" className={navClass(pathname === "/centres")}>
+            <Building2 className="size-4" />B · Update Centres
+          </Link>
+          <Link to="/reports" className={navClass(pathname === "/reports")}>
+            <FileSpreadsheet className="size-4" />C · Reports
+          </Link>
+          <Link to="/rakes" className={navClass(pathname === "/rakes")}>
+            <Train className="size-4" />D · Rake Manager
+          </Link>
+          <Link to="/" className={navClass(pathname === "/")}>
+            <Warehouse className="size-4" />
+            Dashboard
+          </Link>
         </div>
 
         <div className="mt-auto flex items-center justify-between pt-6">
