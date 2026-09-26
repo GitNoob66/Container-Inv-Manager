@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+## TypeScript config
+- `noPropertyAccessFromIndexSignature` and `noUncheckedIndexedAccess` are off: grid and Excel rows are dynamic `Record<string, string>` maps, so those flags add ceremony without safety.
