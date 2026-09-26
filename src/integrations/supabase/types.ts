@@ -14,7 +14,270 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activity_logs: {
+        Row: {
+          action: string
+          centre_id: string | null
+          centre_name: string | null
+          created_at: string
+          details: string | null
+          id: string
+        }
+        Insert: {
+          action: string
+          centre_id?: string | null
+          centre_name?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+        }
+        Update: {
+          action?: string
+          centre_id?: string | null
+          centre_name?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_centre_id_fkey"
+            columns: ["centre_id"]
+            isOneToOne: false
+            referencedRelation: "centres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      centres: {
+        Row: {
+          code: string | null
+          created_at: string
+          id: string
+          location: string | null
+          name: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          location?: string | null
+          name: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          location?: string | null
+          name?: string
+        }
+        Relationships: []
+      }
+      containers: {
+        Row: {
+          account: string | null
+          cargo: string | null
+          category: string | null
+          centre_id: string
+          condition: string | null
+          container_no: string
+          created_at: string
+          ctr_type: string | null
+          dispatched: boolean
+          dry_subtype: string | null
+          id: string
+          in_date: string | null
+          in_time: string | null
+          mode: string | null
+          out_date: string | null
+          out_mode: string | null
+          out_rail_ownership: string | null
+          out_rake_name: string | null
+          out_time: string | null
+          ownership: string | null
+          rail_ownership: string | null
+          rake_name: string | null
+          size: string | null
+          status: string | null
+          updated_at: string
+          weight: number | null
+          yard_position: string | null
+        }
+        Insert: {
+          account?: string | null
+          cargo?: string | null
+          category?: string | null
+          centre_id: string
+          condition?: string | null
+          container_no: string
+          created_at?: string
+          ctr_type?: string | null
+          dispatched?: boolean
+          dry_subtype?: string | null
+          id?: string
+          in_date?: string | null
+          in_time?: string | null
+          mode?: string | null
+          out_date?: string | null
+          out_mode?: string | null
+          out_rail_ownership?: string | null
+          out_rake_name?: string | null
+          out_time?: string | null
+          ownership?: string | null
+          rail_ownership?: string | null
+          rake_name?: string | null
+          size?: string | null
+          status?: string | null
+          updated_at?: string
+          weight?: number | null
+          yard_position?: string | null
+        }
+        Update: {
+          account?: string | null
+          cargo?: string | null
+          category?: string | null
+          centre_id?: string
+          condition?: string | null
+          container_no?: string
+          created_at?: string
+          ctr_type?: string | null
+          dispatched?: boolean
+          dry_subtype?: string | null
+          id?: string
+          in_date?: string | null
+          in_time?: string | null
+          mode?: string | null
+          out_date?: string | null
+          out_mode?: string | null
+          out_rail_ownership?: string | null
+          out_rake_name?: string | null
+          out_time?: string | null
+          ownership?: string | null
+          rail_ownership?: string | null
+          rake_name?: string | null
+          size?: string | null
+          status?: string | null
+          updated_at?: string
+          weight?: number | null
+          yard_position?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "containers_centre_id_fkey"
+            columns: ["centre_id"]
+            isOneToOne: false
+            referencedRelation: "centres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rakes: {
+        Row: {
+          bpc_due_date: string | null
+          created_at: string
+          current_user_type: string
+          id: string
+          ownership: string
+          rake_basing: string | null
+          rake_id: string | null
+          rake_name: string
+          wagons: number | null
+        }
+        Insert: {
+          bpc_due_date?: string | null
+          created_at?: string
+          current_user_type?: string
+          id?: string
+          ownership?: string
+          rake_basing?: string | null
+          rake_id?: string | null
+          rake_name: string
+          wagons?: number | null
+        }
+        Update: {
+          bpc_due_date?: string | null
+          created_at?: string
+          current_user_type?: string
+          id?: string
+          ownership?: string
+          rake_basing?: string | null
+          rake_id?: string | null
+          rake_name?: string
+          wagons?: number | null
+        }
+        Relationships: []
+      }
+      size_options: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          teu: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          teu?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          teu?: number
+        }
+        Relationships: []
+      }
+      type_options: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          subtypes: string[]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          subtypes?: string[]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          subtypes?: string[]
+        }
+        Relationships: []
+      }
+      yard_positions: {
+        Row: {
+          centre_id: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          centre_id: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          centre_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "yard_positions_centre_id_fkey"
+            columns: ["centre_id"]
+            isOneToOne: false
+            referencedRelation: "centres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
