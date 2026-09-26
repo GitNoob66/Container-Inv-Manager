@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CentresRouteImport } from './routes/centres'
 import { Route as RakesRouteImport } from './routes/rakes'
+import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as CentreCentreIdSectionRouteImport } from './routes/centre.$centreId.$section'
 
 const IndexRoute = IndexRouteImport.update({
@@ -29,6 +30,11 @@ const RakesRoute = RakesRouteImport.update({
   path: '/rakes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CentreCentreIdSectionRoute = CentreCentreIdSectionRouteImport.update({
   id: '/centre/$centreId/$section',
   path: '/centre/$centreId/$section',
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/centres': typeof CentresRoute
   '/rakes': typeof RakesRoute
+  '/reports': typeof ReportsRoute
   '/centre/$centreId/$section': typeof CentreCentreIdSectionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/centres': typeof CentresRoute
   '/rakes': typeof RakesRoute
+  '/reports': typeof ReportsRoute
   '/centre/$centreId/$section': typeof CentreCentreIdSectionRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,29 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/centres': typeof CentresRoute
   '/rakes': typeof RakesRoute
+  '/reports': typeof ReportsRoute
   '/centre/$centreId/$section': typeof CentreCentreIdSectionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/centres' | '/rakes' | '/centre/$centreId/$section'
+  fullPaths:
+    '/' | '/centres' | '/rakes' | '/reports' | '/centre/$centreId/$section'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/centres' | '/rakes' | '/centre/$centreId/$section'
-  id: '__root__' | '/' | '/centres' | '/rakes' | '/centre/$centreId/$section'
+  to: '/' | '/centres' | '/rakes' | '/reports' | '/centre/$centreId/$section'
+  id:
+    | '__root__'
+    | '/'
+    | '/centres'
+    | '/rakes'
+    | '/reports'
+    | '/centre/$centreId/$section'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CentresRoute: typeof CentresRoute
   RakesRoute: typeof RakesRoute
+  ReportsRoute: typeof ReportsRoute
   CentreCentreIdSectionRoute: typeof CentreCentreIdSectionRoute
 }
 
@@ -92,6 +109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RakesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/centre/$centreId/$section': {
       id: '/centre/$centreId/$section'
       path: '/centre/$centreId/$section'
@@ -106,6 +130,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CentresRoute: CentresRoute,
   RakesRoute: RakesRoute,
+  ReportsRoute: ReportsRoute,
   CentreCentreIdSectionRoute: CentreCentreIdSectionRoute,
 }
 export const routeTree = rootRouteImport
