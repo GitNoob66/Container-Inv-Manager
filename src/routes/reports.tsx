@@ -70,7 +70,10 @@ function ReportsPage() {
   };
 
   const specificCentre = async () => {
-    if (!centreId) return toast.error("Choose a centre first.");
+    if (!centreId) {
+      toast.error("Choose a centre first.");
+      return;
+    }
     setBusy(true);
     try {
       const rows = await api.containers(centreId);
@@ -88,7 +91,10 @@ function ReportsPage() {
   };
 
   const dispatchReport = async () => {
-    if (!centreId) return toast.error("Choose a centre first.");
+    if (!centreId) {
+      toast.error("Choose a centre first.");
+      return;
+    }
     let start = from;
     let end = to;
     if (period !== "custom") {
@@ -98,7 +104,10 @@ function ReportsPage() {
       start = startDate.toISOString().slice(0, 10);
       end = endDate.toISOString().slice(0, 10);
     }
-    if (!start || !end) return toast.error("Choose both dates for the custom period.");
+    if (!start || !end) {
+      toast.error("Choose both dates for the custom period.");
+      return;
+    }
     setBusy(true);
     try {
       const rows = await api.dispatchedContainers(centreId, start, end);

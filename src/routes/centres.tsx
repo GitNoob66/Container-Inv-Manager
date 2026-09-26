@@ -39,7 +39,7 @@ function CentresPage() {
         await api.updateCentre(editing.id, draft);
         logAction(editing.id, draft.name, "Centre updated", draft.name);
       } else {
-        const created = (await api.createCentre(draft)) as Centre;
+        const created = (await api.createCentre(draft)) as unknown as Centre;
         logAction(created.id, created.name, "Centre created", created.name);
       }
       setDraft({ name: "", code: "", location: "" });
