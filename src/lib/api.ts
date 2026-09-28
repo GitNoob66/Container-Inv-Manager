@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { localApi } from "@/lib/local-api";
 
 export type Centre = { id: string; name: string; code: string | null; location: string | null };
 export type YardPosition = { id: string; centre_id: string; name: string };
@@ -59,7 +60,7 @@ function unwrap<T>({ data, error }: { data: T | null; error: { message: string }
   return data as T;
 }
 
-export const api = {
+const cloudApi = {
   async centres(): Promise<Centre[]> {
     return unwrap(await supabase.from("centres").select("*").order("name"));
   },
@@ -213,6 +214,9 @@ export const api = {
       .insert({ centre_id: centreId, centre_name: centreName, action, details } as never);
   },
 };
+
+export const api: typeof cloudApi =
+  import.meta.env.VITE_OFFLINE_MODE === "true" ? (localApi as typeof cloudApi) : cloudApi;
 
 export function teuFor(size: string | null): number {
   if (!size) return 0;

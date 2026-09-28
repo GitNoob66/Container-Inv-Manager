@@ -24,6 +24,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LocalBackupControls } from "@/components/local-backup-controls";
 
 export const CENTRE_SECTIONS = [
   { key: "inward", label: "Inward Entry" },
@@ -118,7 +119,12 @@ export function AppShell({
           </div>
         </Link>
 
-        <div className="mb-1 px-1 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
+        <Link to="/" className={navClass(pathname === "/")}>
+          <Warehouse className="size-4" />
+          Dashboard
+        </Link>
+
+        <div className="mb-1 mt-5 px-1 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
           A · Centre
         </div>
         <CentrePicker centreId={centreId} />
@@ -153,17 +159,16 @@ export function AppShell({
           <Link to="/rakes" className={navClass(pathname === "/rakes")}>
             <Train className="size-4" />D · Rake Manager
           </Link>
-          <Link to="/" className={navClass(pathname === "/")}>
-            <Warehouse className="size-4" />
-            Dashboard
-          </Link>
         </div>
 
-        <div className="mt-auto flex items-center justify-between pt-6">
-          <span className="flex items-center gap-1.5 text-[11px] text-sidebar-foreground/50">
-            <ScrollText className="size-3" /> Master log active
-          </span>
-          <ThemeToggle />
+        <div className="mt-auto space-y-2 pt-6">
+          <LocalBackupControls />
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1.5 text-[11px] text-sidebar-foreground/50">
+              <ScrollText className="size-3" /> Master log active
+            </span>
+            <ThemeToggle />
+          </div>
         </div>
       </aside>
 

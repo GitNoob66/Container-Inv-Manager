@@ -13,6 +13,8 @@ import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
+const OFFLINE_MODE = import.meta.env.VITE_OFFLINE_MODE === "true";
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -92,12 +94,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap",
-      },
+      ...(OFFLINE_MODE
+        ? []
+        : [
+            { rel: "preconnect", href: "https://fonts.googleapis.com" },
+            { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+            {
+              rel: "stylesheet",
+              href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap",
+            },
+          ]),
       {
         rel: "stylesheet",
         href: appCss,
