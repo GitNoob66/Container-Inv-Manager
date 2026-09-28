@@ -83,6 +83,7 @@ export type Database = {
           container_no: string
           created_at: string
           ctr_type: string | null
+          destination: string | null
           dispatched: boolean
           dry_subtype: string | null
           id: string
@@ -97,6 +98,7 @@ export type Database = {
           ownership: string | null
           rail_ownership: string | null
           rake_name: string | null
+          remarks: string | null
           size: string | null
           status: string | null
           updated_at: string
@@ -112,6 +114,7 @@ export type Database = {
           container_no: string
           created_at?: string
           ctr_type?: string | null
+          destination?: string | null
           dispatched?: boolean
           dry_subtype?: string | null
           id?: string
@@ -126,6 +129,7 @@ export type Database = {
           ownership?: string | null
           rail_ownership?: string | null
           rake_name?: string | null
+          remarks?: string | null
           size?: string | null
           status?: string | null
           updated_at?: string
@@ -141,6 +145,7 @@ export type Database = {
           container_no?: string
           created_at?: string
           ctr_type?: string | null
+          destination?: string | null
           dispatched?: boolean
           dry_subtype?: string | null
           id?: string
@@ -155,6 +160,7 @@ export type Database = {
           ownership?: string | null
           rail_ownership?: string | null
           rake_name?: string | null
+          remarks?: string | null
           size?: string | null
           status?: string | null
           updated_at?: string

@@ -14,3 +14,4 @@
 
 ## Offline edition
 - The web build uses Lovable Cloud, while the portable Windows build selects IndexedDB through `VITE_OFFLINE_MODE=true`, preserving one UI and data contract for both editions.
+- Container fields added to the cloud schema must also be represented in the IndexedDB model so online and portable reports remain compatible.

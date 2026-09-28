@@ -54,6 +54,8 @@ export function useFieldOptions(centreId: string) {
     { key: "out_rake_name", label: "Rake", kind: "select", options: rakes.map((r) => r.rake_name) },
     { key: "out_date", label: "Out Date", kind: "date" },
     { key: "out_time", label: "Out Time", kind: "time" },
+    { key: "destination", label: "Destination" },
+    { key: "remarks", label: "Remarks", width: "12rem" },
     { key: "size", label: "Size", kind: "select", options: sizes.map((s) => s.label), readOnly: true },
     { key: "status", label: "Status", kind: "select", options: STATUSES, readOnly: true },
     { key: "account", label: "Account", readOnly: true },

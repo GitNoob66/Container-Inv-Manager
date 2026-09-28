@@ -29,6 +29,8 @@ function toRow(c: Container, now: { date: string; time: string }): GridRow {
     out_rake_name: "",
     out_date: now.date,
     out_time: now.time,
+    destination: "",
+    remarks: "",
     size: c.size ?? "",
     status: c.status ?? "",
     account: c.account ?? "",
@@ -57,6 +59,8 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
     out_rake_name: "",
     out_date: nowParts.date,
     out_time: nowParts.time,
+    destination: "",
+    remarks: "",
   });
 
   const base = useMemo(() => containers.map((c) => toRow(c, nowParts)), [containers, nowParts]);
@@ -77,6 +81,8 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
           out_rake_name: r.out_mode === "Rail" ? r.out_rake_name || null : null,
           out_date: r.out_date || null,
           out_time: r.out_time || null,
+          destination: r.destination || null,
+          remarks: r.remarks || null,
           yard_position: r.yard_position || null,
           dispatched: true,
         });
@@ -184,6 +190,20 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
               type="time"
               value={bulk.out_time}
               onChange={(e) => setBulk((b) => ({ ...b, out_time: e.target.value }))}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Destination</Label>
+            <Input
+              value={bulk.destination}
+              onChange={(e) => setBulk((b) => ({ ...b, destination: e.target.value }))}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Remarks</Label>
+            <Input
+              value={bulk.remarks}
+              onChange={(e) => setBulk((b) => ({ ...b, remarks: e.target.value }))}
             />
           </div>
           <div className="flex items-end">
