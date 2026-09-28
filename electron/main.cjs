@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, dialog } = require("electron");
 const path = require("path");
 
 function createWindow() {
@@ -16,7 +16,14 @@ function createWindow() {
     },
   });
 
-  window.loadFile(path.join(__dirname, "..", "offline-dist", "index.html"));
+  const offlineEntry = path.join(__dirname, "..", "offline-dist", "offline-index.html");
+  window.loadFile(offlineEntry).catch((error) => {
+    dialog.showErrorBox(
+      "Container Yard Manager could not start",
+      `The offline application files could not be loaded.\n\n${error.message}`,
+    );
+    app.quit();
+  });
 }
 
 app.whenReady().then(() => {
