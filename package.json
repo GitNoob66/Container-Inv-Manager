@@ -1,5 +1,7 @@
 {
   "name": "tanstack_start_ts",
+  "productName": "Container Yard Manager",
+  "main": "electron/main.cjs",
   "private": true,
   "sideEffects": false,
   "type": "module",

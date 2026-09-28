@@ -118,6 +118,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  if (OFFLINE_MODE) return <>{children}</>;
   return (
     <html lang="en">
       <head>
