@@ -216,7 +216,7 @@ const cloudApi = {
 };
 
 export const api: typeof cloudApi =
-  import.meta.env.VITE_OFFLINE_MODE === "true" ? (localApi as typeof cloudApi) : cloudApi;
+  import.meta.env.VITE_OFFLINE_MODE === "true" ? (localApi as unknown as typeof cloudApi) : cloudApi;
 
 export function teuFor(size: string | null): number {
   if (!size) return 0;
