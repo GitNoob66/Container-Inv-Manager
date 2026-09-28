@@ -112,16 +112,16 @@ async function writeData(data: LocalData): Promise<void> {
 let writeQueue = Promise.resolve();
 
 async function change<T>(update: (data: LocalData) => T): Promise<T> {
-  let output: T | undefined;
+  let result: { value: T } | undefined;
   const operation = writeQueue.then(async () => {
     const data = await readData();
-    output = update(data);
+    result = { value: update(data) };
     await writeData(data);
   });
   writeQueue = operation.catch(() => undefined);
   await operation;
-  if (output === undefined) throw new Error("Local update did not complete.");
-  return output;
+  if (!result) throw new Error("Local update did not complete.");
+  return result.value;
 }
 
 function sortBy<T>(rows: T[], field: keyof T, descending = false): T[] {
