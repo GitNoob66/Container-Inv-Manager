@@ -41,6 +41,8 @@ export type Container = {
   out_rake_name: string | null;
   out_date: string | null;
   out_time: string | null;
+  destination: string | null;
+  remarks: string | null;
   dispatched: boolean;
   created_at: string;
   updated_at: string;

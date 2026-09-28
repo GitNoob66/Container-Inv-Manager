@@ -152,6 +152,12 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  :root:not(.dark) input[type="date"]::-webkit-calendar-picker-indicator,
+  :root:not(.dark) input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: brightness(0) saturate(100%) invert(31%) sepia(47%) saturate(1570%) hue-rotate(166deg) brightness(88%) contrast(93%);
+    opacity: 1;
+  }
+
   h1,
   h2,
   h3,

@@ -23,6 +23,8 @@ const HEADERS = [
   "Out Rake",
   "Out Date",
   "Out Time",
+  "Destination",
+  "Remarks",
   "Dispatched",
 ];
 
@@ -49,6 +51,8 @@ function rowFor(c: Container, centreName: string) {
     c.out_rake_name ?? "",
     c.out_date ?? "",
     c.out_time ?? "",
+    c.destination ?? "",
+    c.remarks ?? "",
     c.dispatched ? "Yes" : "No",
   ];
 }

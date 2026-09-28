@@ -320,7 +320,9 @@ export const localApi = {
         cargo: row.cargo ?? null, category: row.category ?? null, account: row.account ?? null,
         yard_position: row.yard_position ?? null, out_mode: row.out_mode ?? null,
         out_rail_ownership: row.out_rail_ownership ?? null, out_rake_name: row.out_rake_name ?? null,
-        out_date: row.out_date ?? null, out_time: row.out_time ?? null, dispatched: row.dispatched ?? false,
+        out_date: row.out_date ?? null, out_time: row.out_time ?? null,
+        destination: row.destination ?? null, remarks: row.remarks ?? null,
+        dispatched: row.dispatched ?? false,
         created_at: row.created_at ?? now, updated_at: now,
       }));
       for (const row of created) {

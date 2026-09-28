@@ -29,6 +29,8 @@ export type EntryDraft = {
   out_rake_name: string;
   out_date: string;
   out_time: string;
+  destination: string;
+  remarks: string;
 };
 
 export function emptyDraft(): EntryDraft {
@@ -56,6 +58,8 @@ export function emptyDraft(): EntryDraft {
     out_rake_name: "",
     out_date: now.toISOString().slice(0, 10),
     out_time: now.toTimeString().slice(0, 5),
+    destination: "",
+    remarks: "",
   };
 }
 
