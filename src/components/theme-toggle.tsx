@@ -24,7 +24,14 @@ export function useTheme() {
 export function ThemeToggle() {
   const { dark, toggle } = useTheme();
   return (
-    <Button variant="ghost" size="icon" onClick={toggle} aria-label="Toggle theme">
+    <Button
+      variant="ghost"
+      size="icon"
+      className="text-theme-toggle hover:text-theme-toggle"
+      onClick={toggle}
+      aria-label="Toggle theme"
+      title={dark ? "Use light mode" : "Use dark mode"}
+    >
       {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
     </Button>
   );

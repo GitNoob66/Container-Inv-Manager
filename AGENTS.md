@@ -11,3 +11,6 @@
 
 ## TypeScript config
 - `noPropertyAccessFromIndexSignature`, `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` are off: grid and Excel rows are dynamic `Record<string, string>` maps, so those flags add ceremony without safety.
+
+## Offline edition
+- The web build uses Lovable Cloud, while the portable Windows build selects IndexedDB through `VITE_OFFLINE_MODE=true`, preserving one UI and data contract for both editions.
