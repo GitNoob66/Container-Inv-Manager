@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { api } from "@/lib/api";
-import { buildContainerWorkbook, downloadWorkbook } from "@/lib/reports";
+import { buildContainerWorkbook, buildVehicleWorkbook, downloadWorkbook } from "@/lib/reports";
 import { logAction } from "@/lib/session";
 
 export const Route = createFileRoute("/reports")({
@@ -51,6 +51,19 @@ function ReportsPage() {
   const [busy, setBusy] = useState(false);
 
   const nameById = Object.fromEntries(centres.map((c) => [c.id, c.name]));
+
+  const vehicleReport = async () => {
+    setBusy(true);
+    try {
+      const rows = await api.vehicles();
+      downloadWorkbook(buildVehicleWorkbook(rows, nameById), `vehicles-all-centres-${new Date().toISOString().slice(0, 10)}.xlsx`);
+      toast.success(`Vehicle report generated (${rows.length} vehicles).`);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const allCentres = async () => {
     setBusy(true);
@@ -165,6 +178,16 @@ function ReportsPage() {
           </div>
           <Button onClick={specificCentre} disabled={busy}>
             <FileSpreadsheet className="mr-2 size-4" /> Generate inventory report
+          </Button>
+        </section>
+
+        <section className="panel space-y-3 p-5 lg:col-span-2">
+          <h2 className="font-display text-base font-semibold">Vehicle Register</h2>
+          <p className="text-sm text-muted-foreground">
+            Read-only Excel list of vehicles registered by every centre.
+          </p>
+          <Button onClick={vehicleReport} disabled={busy}>
+            <FileSpreadsheet className="mr-2 size-4" /> Generate vehicle report
           </Button>
         </section>
 

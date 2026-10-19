@@ -1,6 +1,12 @@
 const { app, BrowserWindow, dialog } = require("electron");
 const path = require("path");
 
+// Keep every record in a "data" folder beside the EXE so the whole extracted
+// folder is portable (USB / any drive). Development runs keep Electron's default.
+if (app.isPackaged) {
+  app.setPath("userData", path.join(path.dirname(process.execPath), "data"));
+}
+
 function createWindow() {
   const window = new BrowserWindow({
     width: 1440,

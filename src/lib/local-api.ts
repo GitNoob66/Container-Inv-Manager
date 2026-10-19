@@ -5,6 +5,7 @@ import type {
   Rake,
   SizeOption,
   TypeOption,
+  Vehicle,
   YardPosition,
 } from "@/lib/api";
 
@@ -17,6 +18,7 @@ type LocalData = {
   rakes: Rake[];
   containers: Container[];
   logs: ActivityLog[];
+  vehicles: Vehicle[];
 };
 
 const DB_NAME = "container-yard-manager";
@@ -68,6 +70,7 @@ function initialData(): LocalData {
     rakes: [],
     containers: [],
     logs: [],
+    vehicles: [],
   };
 }
 
@@ -92,7 +95,10 @@ async function readData(): Promise<LocalData> {
     request.onerror = () => reject(request.error ?? new Error("Local records could not be read."));
   });
   db.close();
-  if (saved) return saved;
+  if (saved) {
+    if (!Array.isArray(saved.vehicles)) saved.vehicles = [];
+    return saved;
+  }
   const seeded = initialData();
   await writeData(seeded);
   return seeded;
@@ -146,6 +152,7 @@ function validateBackup(value: unknown): LocalData {
   if (data.version !== 1 || keys.some((key) => !Array.isArray(data[key]))) {
     throw new Error("This backup is incomplete or belongs to an unsupported version.");
   }
+  if (!Array.isArray(data.vehicles)) data.vehicles = [];
   return data as LocalData;
 }
 
@@ -166,7 +173,61 @@ export async function importLocalBackup(file: File): Promise<void> {
   await writeData(validateBackup(parsed));
 }
 
+/** Wipes every local record and restores the factory defaults (12 centres, sizes, types). */
+export async function resetAllLocalData(): Promise<void> {
+  await change((data) => {
+    Object.assign(data, initialData());
+  });
+}
+
+/** Wipes containers, yard positions, vehicles and logs for one centre only. */
+export async function resetCentreLocalData(centreId: string): Promise<void> {
+  await change((data) => {
+    data.containers = data.containers.filter((r) => r.centre_id !== centreId);
+    data.yardPositions = data.yardPositions.filter((r) => r.centre_id !== centreId);
+    data.vehicles = data.vehicles.filter((r) => r.centre_id !== centreId);
+    data.logs = data.logs.filter((r) => r.centre_id !== centreId);
+  });
+}
+
 export const localApi = {
+  async vehicles(centreId?: string): Promise<Vehicle[]> {
+    const rows = (await readData()).vehicles.filter((r) => !centreId || r.centre_id === centreId);
+    return sortBy(rows, "vehicle_no");
+  },
+  async upsertVehicle(row: Partial<Vehicle>): Promise<Vehicle> {
+    return change((data) => {
+      const no = (row.vehicle_no ?? "").trim().toUpperCase();
+      const clash = data.vehicles.find(
+        (v) => v.centre_id === row.centre_id && v.vehicle_no === no && v.id !== row.id,
+      );
+      if (clash) throw new Error(`Vehicle ${no} is already registered at this centre.`);
+      if (row.id) {
+        const existing = data.vehicles.find((v) => v.id === row.id);
+        if (!existing) throw new Error("Vehicle not found.");
+        Object.assign(existing, row, { vehicle_no: no });
+        return existing;
+      }
+      const created: Vehicle = {
+        id: makeId(),
+        centre_id: row.centre_id ?? "",
+        vehicle_no: no,
+        vehicle_type: row.vehicle_type ?? null,
+        transporter: row.transporter ?? null,
+        driver_name: row.driver_name ?? null,
+        driver_phone: row.driver_phone ?? null,
+        remarks: row.remarks ?? null,
+        created_at: new Date().toISOString(),
+      };
+      data.vehicles.push(created);
+      return created;
+    });
+  },
+  async deleteVehicle(id: string): Promise<void> {
+    await change((data) => {
+      data.vehicles = data.vehicles.filter((v) => v.id !== id);
+    });
+  },
   async centres(): Promise<Centre[]> {
     return sortBy((await readData()).centres, "name");
   },
@@ -201,6 +262,7 @@ export const localApi = {
       data.centres = data.centres.filter((row) => row.id !== id);
       data.yardPositions = data.yardPositions.filter((row) => row.centre_id !== id);
       data.containers = data.containers.filter((row) => row.centre_id !== id);
+      data.vehicles = data.vehicles.filter((row) => row.centre_id !== id);
     });
   },
   async yardPositions(centreId: string): Promise<YardPosition[]> {
