@@ -44,7 +44,7 @@ function normalise(data: LocalData): LocalData {
   if (!Array.isArray(data.customColumns)) data.customColumns = [];
   if (!data.passwords || typeof data.passwords !== "object") data.passwords = {};
   data.containers = data.containers.map((c) => ({ ...blankContainer(), ...c }));
-  data.rakes = data.rakes.map((r) => ({ rake_type: null, ...r }));
+  data.rakes = data.rakes.map((r) => ({ ...r, rake_type: r.rake_type ?? null }));
   return data;
 }
 

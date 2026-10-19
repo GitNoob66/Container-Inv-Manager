@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CentresRouteImport } from './routes/centres'
 import { Route as RakesRouteImport } from './routes/rakes'
 import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as VehiclesRouteImport } from './routes/vehicles'
 import { Route as CentreCentreIdSectionRouteImport } from './routes/centre.$centreId.$section'
 
 const IndexRoute = IndexRouteImport.update({
@@ -35,6 +37,16 @@ const ReportsRoute = ReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VehiclesRoute = VehiclesRouteImport.update({
+  id: '/vehicles',
+  path: '/vehicles',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CentreCentreIdSectionRoute = CentreCentreIdSectionRouteImport.update({
   id: '/centre/$centreId/$section',
   path: '/centre/$centreId/$section',
@@ -46,6 +58,8 @@ export interface FileRoutesByFullPath {
   '/centres': typeof CentresRoute
   '/rakes': typeof RakesRoute
   '/reports': typeof ReportsRoute
+  '/settings': typeof SettingsRoute
+  '/vehicles': typeof VehiclesRoute
   '/centre/$centreId/$section': typeof CentreCentreIdSectionRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +67,8 @@ export interface FileRoutesByTo {
   '/centres': typeof CentresRoute
   '/rakes': typeof RakesRoute
   '/reports': typeof ReportsRoute
+  '/settings': typeof SettingsRoute
+  '/vehicles': typeof VehiclesRoute
   '/centre/$centreId/$section': typeof CentreCentreIdSectionRoute
 }
 export interface FileRoutesById {
@@ -61,20 +77,37 @@ export interface FileRoutesById {
   '/centres': typeof CentresRoute
   '/rakes': typeof RakesRoute
   '/reports': typeof ReportsRoute
+  '/settings': typeof SettingsRoute
+  '/vehicles': typeof VehiclesRoute
   '/centre/$centreId/$section': typeof CentreCentreIdSectionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/centres' | '/rakes' | '/reports' | '/centre/$centreId/$section'
+    | '/'
+    | '/centres'
+    | '/rakes'
+    | '/reports'
+    | '/settings'
+    | '/vehicles'
+    | '/centre/$centreId/$section'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/centres' | '/rakes' | '/reports' | '/centre/$centreId/$section'
+  to:
+    | '/'
+    | '/centres'
+    | '/rakes'
+    | '/reports'
+    | '/settings'
+    | '/vehicles'
+    | '/centre/$centreId/$section'
   id:
     | '__root__'
     | '/'
     | '/centres'
     | '/rakes'
     | '/reports'
+    | '/settings'
+    | '/vehicles'
     | '/centre/$centreId/$section'
   fileRoutesById: FileRoutesById
 }
@@ -83,6 +116,8 @@ export interface RootRouteChildren {
   CentresRoute: typeof CentresRoute
   RakesRoute: typeof RakesRoute
   ReportsRoute: typeof ReportsRoute
+  SettingsRoute: typeof SettingsRoute
+  VehiclesRoute: typeof VehiclesRoute
   CentreCentreIdSectionRoute: typeof CentreCentreIdSectionRoute
 }
 
@@ -116,6 +151,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vehicles': {
+      id: '/vehicles'
+      path: '/vehicles'
+      fullPath: '/vehicles'
+      preLoaderRoute: typeof VehiclesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/centre/$centreId/$section': {
       id: '/centre/$centreId/$section'
       path: '/centre/$centreId/$section'
@@ -131,6 +180,8 @@ const rootRouteChildren: RootRouteChildren = {
   CentresRoute: CentresRoute,
   RakesRoute: RakesRoute,
   ReportsRoute: ReportsRoute,
+  SettingsRoute: SettingsRoute,
+  VehiclesRoute: VehiclesRoute,
   CentreCentreIdSectionRoute: CentreCentreIdSectionRoute,
 }
 export const routeTree = rootRouteImport

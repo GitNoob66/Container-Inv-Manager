@@ -8,7 +8,7 @@ import { OutwardEntry } from "@/features/outward-entry";
 import { SizeTypeUpdate } from "@/features/size-type";
 import { YardPositions } from "@/features/yard-positions";
 import { api } from "@/lib/api";
-import { Vehicles } from "@/features/vehicles";
+import { InventoryOverview } from "@/features/overview";
 import { canAccessCentre, useRole } from "@/lib/role";
 
 export const Route = createFileRoute("/centre/$centreId/$section")({
@@ -61,8 +61,8 @@ function CentreSection() {
     return (
       <AppShell title="Not your centre">
         <p className="text-sm text-muted-foreground">
-          You are working as a centre user for another centre. Switch to Master User under
-          "Working as" to open {centre.name}.
+          You are signed in as a centre user for another centre. Log out and sign in as Admin
+          or as the {centre.name} centre user to open it.
         </p>
       </AppShell>
     );
@@ -70,7 +70,7 @@ function CentreSection() {
 
   return (
     <AppShell centreId={centreId} title={`${centre.name} · ${label}`}>
-      {section === "vehicles" ? <Vehicles centre={centre} /> : null}
+      {section === "overview" ? <InventoryOverview centreId={centre.id} /> : null}
       {section === "inward" ? <InwardEntry centre={centre} /> : null}
       {section === "inventory" ? <InventoryUpdate centre={centre} /> : null}
       {section === "yard" ? <YardPositions centre={centre} /> : null}

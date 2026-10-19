@@ -31,7 +31,7 @@ export function InwardEntry({ centre }: { centre: Centre }) {
   const { inwardColumns, cfg } = useFieldOptions(centre.id);
   const wagons = useWagonSession(`${centre.id}:inward`);
 
-  const set = (patch: Partial<EntryDraft>) => setDraft((d) => ({ ...d, ...patch }));
+  const set = (patch: Partial<EntryDraft>) => setDraft((d) => ({ ...d, ...patch }) as EntryDraft);
 
   const saveManual = async () => {
     const check = validateContainerNo(draft.container_no);
@@ -175,7 +175,7 @@ export function InwardEntry({ centre }: { centre: Centre }) {
       <TabsContent value="flexi" className="space-y-4">
         {rows.length === 0 ? (
           <FlexiUpload
-            customColumns={cfg.custom}
+            customColumns={cfg.config}
             onParsed={(result, fileName) => {
               const base = emptyDraft();
               setRows(result.rows.map((r, i) => ({ __id: `r${i}`, ...parsedToRow(r, base, cfg.custom, CUSTOM_PREFIX) })));

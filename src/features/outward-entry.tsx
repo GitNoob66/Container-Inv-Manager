@@ -295,7 +295,7 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
 
       <TabsContent value="flexi" className="space-y-4">
         <FlexiUpload
-          customColumns={cfg.custom}
+          customColumns={cfg.config}
           onParsed={(result) => {
             const matched = base
               .filter((r) => result.rows.some((p) => p.containerNo === r.container_no))

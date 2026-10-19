@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { BarChart3, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AppShell } from "@/components/app-shell";
@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api, teuFor, type Container } from "@/lib/api";
 import { logAction } from "@/lib/session";
+import { InventoryOverview } from "@/features/overview";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -31,6 +33,7 @@ function Dashboard() {
   const [term, setTerm] = useState("");
   const [query, setQuery] = useState("");
   const [showOverview, setShowOverview] = useState(true);
+  const [location, setLocation] = useState("");
 
   const { data: centres = [] } = useQuery({ queryKey: ["centres"], queryFn: api.centres });
   const { data: containers = [] } = useQuery({
@@ -112,26 +115,16 @@ function Dashboard() {
               <BarChart3 className="mr-2 size-4" /> {showOverview ? "Hide" : "Show"} Overview
             </Button>
             <span className="text-sm text-muted-foreground">
-              {inStock.length} containers in stock · {totalTeu} TEU
+              {location ? nameById[location] : "All centres"} · {location ? inStock.filter((c) => c.centre_id === location).length : inStock.length} containers in stock
             </span>
+            {location ? (
+              <Button size="sm" variant="ghost" onClick={() => setLocation("")}>
+                <X className="mr-1 size-3" /> Show all centres
+              </Button>
+            ) : null}
           </div>
 
-          {showOverview ? (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {bySize.map(([size, v]) => (
-                <div key={size} className="panel p-4">
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground">{size}</div>
-                  <div className="num mt-1 text-2xl font-semibold">{v.count}</div>
-                  <div className="text-xs text-muted-foreground">{v.teu} TEU</div>
-                </div>
-              ))}
-              <div className="panel border-accent/50 bg-accent/10 p-4">
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">Total</div>
-                <div className="num mt-1 text-2xl font-semibold">{inStock.length}</div>
-                <div className="text-xs text-muted-foreground">{totalTeu} TEU</div>
-              </div>
-            </div>
-          ) : null}
+          {showOverview ? <InventoryOverview centreId={location || undefined} /> : null}
         </section>
 
         <section className="space-y-3">
@@ -141,16 +134,23 @@ function Dashboard() {
               const rows = inStock.filter((x) => x.centre_id === c.id);
               const teu = rows.reduce((s, r) => s + teuFor(r.size), 0);
               return (
-                <Link
+                <button
                   key={c.id}
-                  to="/centre/$centreId/$section"
-                  params={{ centreId: c.id, section: "inward" }}
-                  className="panel p-4 transition-shadow hover:shadow-[var(--shadow-float)]"
+                  type="button"
+                  onClick={() => {
+                    setLocation(c.id);
+                    setShowOverview(true);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  className={cn(
+                    "panel p-4 text-left transition-shadow hover:shadow-[var(--shadow-float)]",
+                    location === c.id && "border-accent ring-1 ring-accent",
+                  )}
                 >
                   <div className="font-medium">{c.name}</div>
                   <div className="num mt-2 text-xl font-semibold">{rows.length}</div>
                   <div className="text-xs text-muted-foreground">containers · {teu} TEU</div>
-                </Link>
+                </button>
               );
             })}
           </div>

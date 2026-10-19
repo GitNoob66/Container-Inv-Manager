@@ -1,11 +1,19 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { KeyRound, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { api, type Centre } from "@/lib/api";
 import { logAction } from "@/lib/session";
 
@@ -54,6 +62,7 @@ function CentresPage() {
   return (
     <AppShell title="B · Update Centres">
       <div className="max-w-3xl space-y-5">
+        <PasswordPanel centres={centres} />
         <div className="panel space-y-3 p-4">
           <h2 className="font-display text-base font-semibold">
             {editing ? `Edit ${editing.name}` : "Add a centre"}
@@ -129,5 +138,79 @@ function CentresPage() {
         </div>
       </div>
     </AppShell>
+  );
+}
+
+function PasswordPanel({ centres }: { centres: Centre[] }) {
+  const [subject, setSubject] = useState("admin");
+  const [adminPw, setAdminPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+  const name = subject === "admin" ? "Admin" : (centres.find((c) => c.id === subject)?.name ?? "");
+
+  const save = async () => {
+    if (newPw !== confirm) {
+      toast.error("The two new passwords don't match.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await api.setPassword(adminPw, subject, newPw);
+      logAction(subject === "admin" ? null : subject, subject === "admin" ? null : name, "Password changed", name);
+      toast.success(`Password for ${name} updated.`);
+      setAdminPw("");
+      setNewPw("");
+      setConfirm("");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="panel space-y-3 p-4">
+      <h2 className="flex items-center gap-2 font-display text-base font-semibold">
+        <KeyRound className="size-4" /> Login passwords
+      </h2>
+      <p className="text-xs text-muted-foreground">
+        Until changed, the Admin password is admin123 and each centre's password is its name in lowercase
+        (for example “cw mundra”).
+      </p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Set password for</Label>
+          <Select value={subject} onValueChange={setSubject}>
+            <SelectTrigger aria-label="Set password for">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="admin">Admin</SelectItem>
+              {centres.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Your current Admin password</Label>
+          <Input type="password" value={adminPw} onChange={(e) => setAdminPw(e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">New password</Label>
+          <Input type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Repeat new password</Label>
+          <Input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+        </div>
+      </div>
+      <Button onClick={save} disabled={busy || !adminPw || !newPw}>
+        Save password
+      </Button>
+    </div>
   );
 }
