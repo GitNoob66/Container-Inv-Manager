@@ -15,3 +15,5 @@
 ## Offline edition
 - The web build uses Lovable Cloud, while the portable Windows build selects IndexedDB through `VITE_OFFLINE_MODE=true`, preserving one UI and data contract for both editions.
 - Container fields added to the cloud schema must also be represented in the IndexedDB model so online and portable reports remain compatible.
+- Working role (Master User / Centre User) is a local operating mode in `src/lib/role.ts`, not a security boundary: the app has no login by design.
+- The packaged Windows app stores data in a `data` folder beside the EXE (`app.setPath("userData")` in electron/main.cjs) so the extracted folder is portable; ship it as a ZIP, not a temp-extracting SFX.
