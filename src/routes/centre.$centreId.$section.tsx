@@ -8,6 +8,8 @@ import { OutwardEntry } from "@/features/outward-entry";
 import { SizeTypeUpdate } from "@/features/size-type";
 import { YardPositions } from "@/features/yard-positions";
 import { api } from "@/lib/api";
+import { Vehicles } from "@/features/vehicles";
+import { canAccessCentre, useRole } from "@/lib/role";
 
 export const Route = createFileRoute("/centre/$centreId/$section")({
   head: () => ({
@@ -30,6 +32,7 @@ export const Route = createFileRoute("/centre/$centreId/$section")({
 
 function CentreSection() {
   const { centreId, section } = Route.useParams();
+  const role = useRole();
   const { data: centre, isLoading } = useQuery({
     queryKey: ["centre", centreId],
     queryFn: () => api.centre(centreId),
@@ -54,8 +57,20 @@ function CentreSection() {
     );
   }
 
+  if (!canAccessCentre(role, centreId)) {
+    return (
+      <AppShell title="Not your centre">
+        <p className="text-sm text-muted-foreground">
+          You are working as a centre user for another centre. Switch to Master User under
+          "Working as" to open {centre.name}.
+        </p>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell centreId={centreId} title={`${centre.name} · ${label}`}>
+      {section === "vehicles" ? <Vehicles centre={centre} /> : null}
       {section === "inward" ? <InwardEntry centre={centre} /> : null}
       {section === "inventory" ? <InventoryUpdate centre={centre} /> : null}
       {section === "yard" ? <YardPositions centre={centre} /> : null}

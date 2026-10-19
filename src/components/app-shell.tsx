@@ -25,6 +25,15 @@ import {
 } from "@/components/ui/command";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LocalBackupControls } from "@/components/local-backup-controls";
+import { ResetDataDialog } from "@/components/reset-data-dialog";
+import { setRole, useRole } from "@/lib/role";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const CENTRE_SECTIONS = [
   { key: "inward", label: "Inward Entry" },
@@ -32,14 +41,17 @@ export const CENTRE_SECTIONS = [
   { key: "yard", label: "Yard Positions" },
   { key: "size-type", label: "Size / Type Update" },
   { key: "outward", label: "Outward Entry" },
+  { key: "vehicles", label: "Vehicle Management" },
   { key: "log", label: "Master Log" },
 ];
 
 export function CentrePicker({ centreId }: { centreId?: string }) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const { data: centres = [] } = useQuery({ queryKey: ["centres"], queryFn: api.centres });
-  const current = centres.find((c) => c.id === centreId);
+  const role = useRole();
+  const { data: allCentres = [] } = useQuery({ queryKey: ["centres"], queryFn: api.centres });
+  const centres = role.kind === "centre" ? allCentres.filter((c) => c.id === role.centreId) : allCentres;
+  const current = allCentres.find((c) => c.id === centreId);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -84,6 +96,44 @@ export function CentrePicker({ centreId }: { centreId?: string }) {
   );
 }
 
+function RoleSwitcher() {
+  const role = useRole();
+  const navigate = useNavigate();
+  const { data: centres = [] } = useQuery({ queryKey: ["centres"], queryFn: api.centres });
+  const value = role.kind === "master" ? "master" : role.centreId;
+  return (
+    <div className="mb-4 space-y-1">
+      <div className="px-1 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
+        Working as
+      </div>
+      <Select
+        value={value}
+        onValueChange={(v) => {
+          if (v === "master") {
+            setRole({ kind: "master" });
+            void navigate({ to: "/" });
+          } else {
+            setRole({ kind: "centre", centreId: v });
+            void navigate({ to: "/centre/$centreId/$section", params: { centreId: v, section: "inward" } });
+          }
+        }}
+      >
+        <SelectTrigger aria-label="Working role" className="border-sidebar-border bg-sidebar-accent text-sidebar-accent-foreground">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="master">Master User</SelectItem>
+          {centres.map((c) => (
+            <SelectItem key={c.id} value={c.id}>
+              Centre User · {c.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
 export function AppShell({
   children,
   centreId,
@@ -96,6 +146,11 @@ export function AppShell({
   actions?: ReactNode;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const role = useRole();
+  const isMaster = role.kind === "master";
+  const { data: centreList = [] } = useQuery({ queryKey: ["centres"], queryFn: api.centres });
+  const ownCentreName =
+    role.kind === "centre" ? centreList.find((c) => c.id === role.centreId)?.name : undefined;
   const navClass = (active: boolean) =>
     cn(
       "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
@@ -118,6 +173,8 @@ export function AppShell({
             <div className="text-[11px] text-sidebar-foreground/60">Inventory Manager</div>
           </div>
         </Link>
+
+        <RoleSwitcher />
 
         <Link to="/" className={navClass(pathname === "/")}>
           <Warehouse className="size-4" />
@@ -150,19 +207,24 @@ export function AppShell({
         ) : null}
 
         <div className="mt-6 flex flex-col gap-0.5">
-          <Link to="/centres" className={navClass(pathname === "/centres")}>
-            <Building2 className="size-4" />B · Update Centres
-          </Link>
+          {isMaster ? (
+            <Link to="/centres" className={navClass(pathname === "/centres")}>
+              <Building2 className="size-4" />B · Update Centres
+            </Link>
+          ) : null}
           <Link to="/reports" className={navClass(pathname === "/reports")}>
             <FileSpreadsheet className="size-4" />C · Reports
           </Link>
-          <Link to="/rakes" className={navClass(pathname === "/rakes")}>
-            <Train className="size-4" />D · Rake Manager
-          </Link>
+          {isMaster ? (
+            <Link to="/rakes" className={navClass(pathname === "/rakes")}>
+              <Train className="size-4" />D · Rake Manager
+            </Link>
+          ) : null}
         </div>
 
         <div className="mt-auto space-y-2 pt-6">
           <LocalBackupControls />
+          <ResetDataDialog role={role} {...(ownCentreName ? { centreName: ownCentreName } : {})} />
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-1.5 text-[11px] text-sidebar-foreground/50">
               <ScrollText className="size-3" /> Master log active
@@ -183,15 +245,19 @@ export function AppShell({
             <Button asChild size="sm" variant="secondary">
               <Link to="/">Dashboard</Link>
             </Button>
-            <Button asChild size="sm" variant="secondary">
-              <Link to="/centres">Centres</Link>
-            </Button>
+            {isMaster ? (
+              <Button asChild size="sm" variant="secondary">
+                <Link to="/centres">Centres</Link>
+              </Button>
+            ) : null}
             <Button asChild size="sm" variant="secondary">
               <Link to="/reports">Reports</Link>
             </Button>
-            <Button asChild size="sm" variant="secondary">
-              <Link to="/rakes">Rakes</Link>
-            </Button>
+            {isMaster ? (
+              <Button asChild size="sm" variant="secondary">
+                <Link to="/rakes">Rakes</Link>
+              </Button>
+            ) : null}
           </div>
         </div>
       </div>
