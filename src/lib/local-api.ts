@@ -2,6 +2,7 @@ import type {
   ActivityLog,
   Centre,
   Container,
+  CustomColumn,
   Rake,
   SizeOption,
   TypeOption,
@@ -19,7 +20,38 @@ type LocalData = {
   containers: Container[];
   logs: ActivityLog[];
   vehicles: Vehicle[];
+  customColumns: CustomColumn[];
+  /** subject ("admin" or centre id) -> "salt:sha256hex" */
+  passwords: Record<string, string>;
 };
+
+/** Every container column with its empty value, so older records gain new fields. */
+function blankContainer(): Omit<Container, "id" | "centre_id" | "container_no" | "created_at" | "updated_at"> {
+  return {
+    mode: null, rail_ownership: null, rake_name: null, size: null, ctr_type: null, dry_subtype: null,
+    ownership: null, status: null, weight: null, condition: null, in_date: null, in_time: null,
+    cargo: null, category: null, account: null, yard_position: null, out_mode: null,
+    out_rail_ownership: null, out_rake_name: null, out_date: null, out_time: null,
+    destination: null, remarks: null, truck_no: null, seal_no: null, inward_bill_no: null,
+    net_weight: null, lessor: null, wagon_no: null, stack: null, double_stack: false,
+    out_truck_no: null, out_wagon_no: null, out_stack: null, out_double_stack: false,
+    iso_valid: true, custom_fields: {}, dispatched: false,
+  };
+}
+
+function normalise(data: LocalData): LocalData {
+  if (!Array.isArray(data.vehicles)) data.vehicles = [];
+  if (!Array.isArray(data.customColumns)) data.customColumns = [];
+  if (!data.passwords || typeof data.passwords !== "object") data.passwords = {};
+  data.containers = data.containers.map((c) => ({ ...blankContainer(), ...c }));
+  data.rakes = data.rakes.map((r) => ({ rake_type: null, ...r }));
+  return data;
+}
+
+async function sha256(text: string): Promise<string> {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
 
 const DB_NAME = "container-yard-manager";
 const STORE_NAME = "app-data";
@@ -71,6 +103,8 @@ function initialData(): LocalData {
     containers: [],
     logs: [],
     vehicles: [],
+    customColumns: [],
+    passwords: {},
   };
 }
 
@@ -95,10 +129,7 @@ async function readData(): Promise<LocalData> {
     request.onerror = () => reject(request.error ?? new Error("Local records could not be read."));
   });
   db.close();
-  if (saved) {
-    if (!Array.isArray(saved.vehicles)) saved.vehicles = [];
-    return saved;
-  }
+  if (saved) return normalise(saved);
   const seeded = initialData();
   await writeData(seeded);
   return seeded;
@@ -152,8 +183,7 @@ function validateBackup(value: unknown): LocalData {
   if (data.version !== 1 || keys.some((key) => !Array.isArray(data[key]))) {
     throw new Error("This backup is incomplete or belongs to an unsupported version.");
   }
-  if (!Array.isArray(data.vehicles)) data.vehicles = [];
-  return data as LocalData;
+  return normalise(data as LocalData);
 }
 
 export const isOfflineMode = import.meta.env.VITE_OFFLINE_MODE === "true";
@@ -187,10 +217,60 @@ export async function resetCentreLocalData(centreId: string): Promise<void> {
     data.yardPositions = data.yardPositions.filter((r) => r.centre_id !== centreId);
     data.vehicles = data.vehicles.filter((r) => r.centre_id !== centreId);
     data.logs = data.logs.filter((r) => r.centre_id !== centreId);
+    data.customColumns = data.customColumns.filter((r) => r.centre_id !== centreId);
   });
 }
 
 export const localApi = {
+  async customColumns(centreId?: string): Promise<CustomColumn[]> {
+    const rows = (await readData()).customColumns.filter((r) => !centreId || r.centre_id === centreId);
+    return [...rows].sort((a, b) => a.sort - b.sort);
+  },
+  async upsertCustomColumn(row: Partial<CustomColumn>): Promise<CustomColumn> {
+    return change((data) => {
+      const clash = data.customColumns.find(
+        (c) => c.centre_id === row.centre_id && c.key === row.key && c.id !== row.id,
+      );
+      if (clash && !row.id) throw new Error("A column with that name already exists for this centre.");
+      const current = row.id ? data.customColumns.find((c) => c.id === row.id) : undefined;
+      if (current) {
+        Object.assign(current, row);
+        return { ...current };
+      }
+      const created: CustomColumn = {
+        id: makeId(), centre_id: row.centre_id ?? "", key: row.key ?? "", label: row.label ?? "",
+        kind: row.kind ?? "text", options: row.options ?? [], builtin: row.builtin ?? false,
+        hidden: row.hidden ?? false, sort: row.sort ?? data.customColumns.length,
+      };
+      data.customColumns.push(created);
+      return created;
+    });
+  },
+  async deleteCustomColumn(id: string): Promise<void> {
+    await change((data) => {
+      data.customColumns = data.customColumns.filter((c) => c.id !== id);
+    });
+  },
+  async verifyLogin(subject: string, password: string): Promise<boolean> {
+    const data = await readData();
+    const stored = data.passwords[subject];
+    if (stored) {
+      const [salt, hash] = stored.split(":");
+      return (await sha256(`${salt}${password}`)) === hash;
+    }
+    if (subject === "admin") return password === "admin123";
+    const centre = data.centres.find((c) => c.id === subject);
+    return !!centre && centre.name.toLowerCase() === password;
+  },
+  async setPassword(adminPassword: string, subject: string, newPassword: string): Promise<void> {
+    if (!(await localApi.verifyLogin("admin", adminPassword))) throw new Error("The admin password is incorrect.");
+    if (newPassword.length < 4) throw new Error("The new password must have at least 4 characters.");
+    const salt = makeId();
+    const hash = await sha256(`${salt}${newPassword}`);
+    await change((data) => {
+      data.passwords[subject] = `${salt}:${hash}`;
+    });
+  },
   async vehicles(centreId?: string): Promise<Vehicle[]> {
     const rows = (await readData()).vehicles.filter((r) => !centreId || r.centre_id === centreId);
     return sortBy(rows, "vehicle_no");
@@ -343,6 +423,7 @@ export const localApi = {
         rake_basing: row.rake_basing ?? null, bpc_due_date: row.bpc_due_date ?? null,
         ownership: row.ownership ?? "Owned", wagons: row.wagons ?? null,
         current_user_type: row.current_user_type ?? "Self",
+        rake_type: row.rake_type ?? null,
       };
       data.rakes.push(created);
       return created;
@@ -373,19 +454,15 @@ export const localApi = {
   async insertContainers(rows: Partial<Container>[]): Promise<Container[]> {
     return change((data) => {
       const now = new Date().toISOString();
-      const created = rows.map((row) => ({
-        id: makeId(), centre_id: row.centre_id ?? "", container_no: row.container_no ?? "",
-        mode: row.mode ?? null, rail_ownership: row.rail_ownership ?? null, rake_name: row.rake_name ?? null,
-        size: row.size ?? null, ctr_type: row.ctr_type ?? null, dry_subtype: row.dry_subtype ?? null,
-        ownership: row.ownership ?? null, status: row.status ?? null, weight: row.weight ?? null,
-        condition: row.condition ?? null, in_date: row.in_date ?? null, in_time: row.in_time ?? null,
-        cargo: row.cargo ?? null, category: row.category ?? null, account: row.account ?? null,
-        yard_position: row.yard_position ?? null, out_mode: row.out_mode ?? null,
-        out_rail_ownership: row.out_rail_ownership ?? null, out_rake_name: row.out_rake_name ?? null,
-        out_date: row.out_date ?? null, out_time: row.out_time ?? null,
-        destination: row.destination ?? null, remarks: row.remarks ?? null,
-        dispatched: row.dispatched ?? false,
-        created_at: row.created_at ?? now, updated_at: now,
+      const created: Container[] = rows.map((row) => ({
+        ...blankContainer(),
+        ...row,
+        id: makeId(),
+        centre_id: row.centre_id ?? "",
+        container_no: row.container_no ?? "",
+        custom_fields: row.custom_fields ?? {},
+        created_at: row.created_at ?? now,
+        updated_at: now,
       }));
       for (const row of created) {
         if (data.containers.some((item) => item.container_no === row.container_no && !item.dispatched)) {

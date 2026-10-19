@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_passwords: {
+        Row: {
+          password_hash: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          password_hash: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          password_hash?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       activity_logs: {
         Row: {
           action: string
@@ -83,25 +101,39 @@ export type Database = {
           container_no: string
           created_at: string
           ctr_type: string | null
+          custom_fields: Json
           destination: string | null
           dispatched: boolean
+          double_stack: boolean
           dry_subtype: string | null
           id: string
           in_date: string | null
           in_time: string | null
+          inward_bill_no: string | null
+          iso_valid: boolean
+          lessor: string | null
           mode: string | null
+          net_weight: number | null
           out_date: string | null
+          out_double_stack: boolean
           out_mode: string | null
           out_rail_ownership: string | null
           out_rake_name: string | null
+          out_stack: string | null
           out_time: string | null
+          out_truck_no: string | null
+          out_wagon_no: string | null
           ownership: string | null
           rail_ownership: string | null
           rake_name: string | null
           remarks: string | null
+          seal_no: string | null
           size: string | null
+          stack: string | null
           status: string | null
+          truck_no: string | null
           updated_at: string
+          wagon_no: string | null
           weight: number | null
           yard_position: string | null
         }
@@ -114,25 +146,39 @@ export type Database = {
           container_no: string
           created_at?: string
           ctr_type?: string | null
+          custom_fields?: Json
           destination?: string | null
           dispatched?: boolean
+          double_stack?: boolean
           dry_subtype?: string | null
           id?: string
           in_date?: string | null
           in_time?: string | null
+          inward_bill_no?: string | null
+          iso_valid?: boolean
+          lessor?: string | null
           mode?: string | null
+          net_weight?: number | null
           out_date?: string | null
+          out_double_stack?: boolean
           out_mode?: string | null
           out_rail_ownership?: string | null
           out_rake_name?: string | null
+          out_stack?: string | null
           out_time?: string | null
+          out_truck_no?: string | null
+          out_wagon_no?: string | null
           ownership?: string | null
           rail_ownership?: string | null
           rake_name?: string | null
           remarks?: string | null
+          seal_no?: string | null
           size?: string | null
+          stack?: string | null
           status?: string | null
+          truck_no?: string | null
           updated_at?: string
+          wagon_no?: string | null
           weight?: number | null
           yard_position?: string | null
         }
@@ -145,31 +191,92 @@ export type Database = {
           container_no?: string
           created_at?: string
           ctr_type?: string | null
+          custom_fields?: Json
           destination?: string | null
           dispatched?: boolean
+          double_stack?: boolean
           dry_subtype?: string | null
           id?: string
           in_date?: string | null
           in_time?: string | null
+          inward_bill_no?: string | null
+          iso_valid?: boolean
+          lessor?: string | null
           mode?: string | null
+          net_weight?: number | null
           out_date?: string | null
+          out_double_stack?: boolean
           out_mode?: string | null
           out_rail_ownership?: string | null
           out_rake_name?: string | null
+          out_stack?: string | null
           out_time?: string | null
+          out_truck_no?: string | null
+          out_wagon_no?: string | null
           ownership?: string | null
           rail_ownership?: string | null
           rake_name?: string | null
           remarks?: string | null
+          seal_no?: string | null
           size?: string | null
+          stack?: string | null
           status?: string | null
+          truck_no?: string | null
           updated_at?: string
+          wagon_no?: string | null
           weight?: number | null
           yard_position?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "containers_centre_id_fkey"
+            columns: ["centre_id"]
+            isOneToOne: false
+            referencedRelation: "centres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_columns: {
+        Row: {
+          builtin: boolean
+          centre_id: string
+          created_at: string
+          hidden: boolean
+          id: string
+          key: string
+          kind: string
+          label: string
+          options: string[]
+          sort: number
+        }
+        Insert: {
+          builtin?: boolean
+          centre_id: string
+          created_at?: string
+          hidden?: boolean
+          id?: string
+          key: string
+          kind?: string
+          label: string
+          options?: string[]
+          sort?: number
+        }
+        Update: {
+          builtin?: boolean
+          centre_id?: string
+          created_at?: string
+          hidden?: boolean
+          id?: string
+          key?: string
+          kind?: string
+          label?: string
+          options?: string[]
+          sort?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_columns_centre_id_fkey"
             columns: ["centre_id"]
             isOneToOne: false
             referencedRelation: "centres"
@@ -187,6 +294,7 @@ export type Database = {
           rake_basing: string | null
           rake_id: string | null
           rake_name: string
+          rake_type: string | null
           wagons: number | null
         }
         Insert: {
@@ -198,6 +306,7 @@ export type Database = {
           rake_basing?: string | null
           rake_id?: string | null
           rake_name: string
+          rake_type?: string | null
           wagons?: number | null
         }
         Update: {
@@ -209,6 +318,7 @@ export type Database = {
           rake_basing?: string | null
           rake_id?: string | null
           rake_name?: string
+          rake_type?: string | null
           wagons?: number | null
         }
         Relationships: []
@@ -333,7 +443,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      set_access_password: {
+        Args: {
+          _admin_password: string
+          _new_password: string
+          _subject: string
+        }
+        Returns: undefined
+      }
+      verify_access: {
+        Args: { _password: string; _subject: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

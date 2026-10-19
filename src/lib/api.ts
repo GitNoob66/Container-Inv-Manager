@@ -14,6 +14,20 @@ export type Rake = {
   ownership: string;
   wagons: number | null;
   current_user_type: string;
+  rake_type: string | null;
+};
+
+/** Per-centre column configuration: custom columns and overrides of built-in ones. */
+export type CustomColumn = {
+  id: string;
+  centre_id: string;
+  key: string;
+  label: string;
+  kind: string;
+  options: string[];
+  builtin: boolean;
+  hidden: boolean;
+  sort: number;
 };
 
 export type Container = {
@@ -43,6 +57,20 @@ export type Container = {
   out_time: string | null;
   destination: string | null;
   remarks: string | null;
+  truck_no: string | null;
+  seal_no: string | null;
+  inward_bill_no: string | null;
+  net_weight: number | null;
+  lessor: string | null;
+  wagon_no: string | null;
+  stack: string | null;
+  double_stack: boolean;
+  out_truck_no: string | null;
+  out_wagon_no: string | null;
+  out_stack: string | null;
+  out_double_stack: boolean;
+  iso_valid: boolean;
+  custom_fields: Record<string, string>;
   dispatched: boolean;
   created_at: string;
   updated_at: string;
@@ -228,6 +256,44 @@ const cloudApi = {
   },
   async deleteVehicle(id: string) {
     const { error } = await supabase.from("vehicles").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+  },
+
+  async customColumns(centreId?: string): Promise<CustomColumn[]> {
+    let q = supabase.from("custom_columns").select("*").order("sort").order("created_at");
+    if (centreId) q = q.eq("centre_id", centreId);
+    return unwrap(await q) as unknown as CustomColumn[];
+  },
+  async upsertCustomColumn(row: Partial<CustomColumn>): Promise<CustomColumn> {
+    if (row.id) {
+      return unwrap(
+        await supabase.from("custom_columns").update(row as never).eq("id", row.id).select().single(),
+      ) as unknown as CustomColumn;
+    }
+    return unwrap(
+      await supabase.from("custom_columns").insert(row as never).select().single(),
+    ) as unknown as CustomColumn;
+  },
+  async deleteCustomColumn(id: string) {
+    const { error } = await supabase.from("custom_columns").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+  },
+
+  /** subject is "admin" or a centre id. */
+  async verifyLogin(subject: string, password: string): Promise<boolean> {
+    const { data, error } = await supabase.rpc("verify_access" as never, {
+      _subject: subject,
+      _password: password,
+    } as never);
+    if (error) throw new Error(error.message);
+    return data === true;
+  },
+  async setPassword(adminPassword: string, subject: string, newPassword: string): Promise<void> {
+    const { error } = await supabase.rpc("set_access_password" as never, {
+      _admin_password: adminPassword,
+      _subject: subject,
+      _new_password: newPassword,
+    } as never);
     if (error) throw new Error(error.message);
   },
 

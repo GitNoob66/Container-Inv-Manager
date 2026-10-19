@@ -8,6 +8,13 @@
       "when": 1792407667898,
       "tag": "0000_create_vehicles",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792411548356,
+      "tag": "0001_login_wagons_custom_columns",
+      "breakpoints": true
     }
   ]
 }
