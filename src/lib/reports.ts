@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import type { Container } from "./api";
+import type { Container, Vehicle } from "./api";
 
 const HEADERS = [
   "Centre",
