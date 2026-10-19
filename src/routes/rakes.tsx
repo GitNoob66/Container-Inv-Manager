@@ -209,7 +209,7 @@ function RakesPage() {
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Rake Type</Label>
               <Select
-                value={draft.rake_type || undefined}
+                value={draft.rake_type}
                 onValueChange={(v) => setDraft({ ...draft, rake_type: v })}
               >
                 <SelectTrigger>
