@@ -73,7 +73,7 @@ function ReportsPage() {
   const allCentres = async () => {
     setBusy(true);
     try {
-      const rows = (await api.allContainers()).filter((c) => !c.dispatched);
+      const rows = await api.allContainers();
       downloadWorkbook(
         buildContainerWorkbook(rows, nameById, "Container Inventory — All Centres", await api.customColumns()),
         `all-centres-inventory-${new Date().toISOString().slice(0, 10)}.xlsx`,
