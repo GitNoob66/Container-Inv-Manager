@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { api } from "@/lib/api";
 import { buildContainerWorkbook, buildVehicleWorkbook, downloadWorkbook } from "@/lib/reports";
+import { useRole } from "@/lib/role";
 import { logAction } from "@/lib/session";
 
 export const Route = createFileRoute("/reports")({
@@ -43,19 +44,23 @@ const PERIODS = [
 ];
 
 function ReportsPage() {
-  const { data: centres = [] } = useQuery({ queryKey: ["centres"], queryFn: api.centres });
-  const [centreId, setCentreId] = useState("");
+  const role = useRole();
+  const isAdmin = role.kind === "master";
+  const { data: allCentreList = [] } = useQuery({ queryKey: ["centres"], queryFn: api.centres });
+  const centres = isAdmin ? allCentreList : allCentreList.filter((c) => role.kind === "centre" && c.id === role.centreId);
+  const [pickedCentre, setCentreId] = useState("");
+  const centreId = isAdmin ? pickedCentre : role.kind === "centre" ? role.centreId : "";
   const [period, setPeriod] = useState("30");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const nameById = Object.fromEntries(centres.map((c) => [c.id, c.name]));
+  const nameById = Object.fromEntries(allCentreList.map((c) => [c.id, c.name]));
 
   const vehicleReport = async () => {
     setBusy(true);
     try {
-      const rows = await api.vehicles();
+      const rows = await api.vehicles(isAdmin ? undefined : centreId);
       downloadWorkbook(buildVehicleWorkbook(rows, nameById), `vehicles-all-centres-${new Date().toISOString().slice(0, 10)}.xlsx`);
       toast.success(`Vehicle report generated (${rows.length} vehicles).`);
     } catch (e) {
@@ -70,7 +75,7 @@ function ReportsPage() {
     try {
       const rows = await api.allContainers();
       downloadWorkbook(
-        buildContainerWorkbook(rows, nameById, "Container Inventory — All Centres"),
+        buildContainerWorkbook(rows, nameById, "Container Inventory — All Centres", await api.customColumns()),
         `all-centres-inventory-${new Date().toISOString().slice(0, 10)}.xlsx`,
       );
       logAction(null, null, "Report generated", `All centres (${rows.length} containers)`);
@@ -91,7 +96,7 @@ function ReportsPage() {
     try {
       const rows = await api.containers(centreId);
       downloadWorkbook(
-        buildContainerWorkbook(rows, nameById, `Container Inventory — ${nameById[centreId]}`),
+        buildContainerWorkbook(rows, nameById, `Container Inventory — ${nameById[centreId]}`, await api.customColumns(centreId)),
         `${nameById[centreId].replace(/\s+/g, "-")}-inventory-${new Date().toISOString().slice(0, 10)}.xlsx`,
       );
       logAction(centreId, nameById[centreId], "Report generated", `${rows.length} containers`);
@@ -129,6 +134,7 @@ function ReportsPage() {
           rows,
           nameById,
           `Dispatch Report — ${nameById[centreId]} (${start} to ${end})`,
+          await api.customColumns(centreId),
         ),
         `${nameById[centreId].replace(/\s+/g, "-")}-dispatch-${start}-to-${end}.xlsx`,
       );
@@ -149,6 +155,7 @@ function ReportsPage() {
   return (
     <AppShell title="C · Generate Reports">
       <div className="grid max-w-4xl gap-5 lg:grid-cols-2">
+        {isAdmin ? (
         <section className="panel space-y-3 p-5">
           <h2 className="font-display text-base font-semibold">All Centres</h2>
           <p className="text-sm text-muted-foreground">
@@ -158,6 +165,7 @@ function ReportsPage() {
             <FileSpreadsheet className="mr-2 size-4" /> Generate
           </Button>
         </section>
+        ) : null}
 
         <section className="panel space-y-3 p-5">
           <h2 className="font-display text-base font-semibold">Specific Centre</h2>

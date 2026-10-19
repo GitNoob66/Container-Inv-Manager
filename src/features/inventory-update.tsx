@@ -6,35 +6,17 @@ import { EditableGrid, type GridRow } from "@/components/editable-grid";
 import { FlexiUpload } from "@/components/flexi-upload";
 import { Button } from "@/components/ui/button";
 import { api, type Centre, type Container } from "@/lib/api";
+import { containerToRow, CUSTOM_PREFIX, draftToRow, type EntryDraft } from "@/lib/container-fields";
 import { logAction } from "@/lib/session";
 import { useFieldOptions } from "@/lib/use-field-options";
 
 function toGridRow(c: Container): GridRow {
-  return {
-    __id: c.id,
-    container_no: c.container_no,
-    mode: c.mode ?? "",
-    rail_ownership: c.rail_ownership ?? "",
-    rake_name: c.rake_name ?? "",
-    size: c.size ?? "",
-    ctr_type: c.ctr_type ?? "",
-    dry_subtype: c.dry_subtype ?? "",
-    ownership: c.ownership ?? "",
-    status: c.status ?? "",
-    weight: c.weight != null ? String(c.weight) : "",
-    condition: c.condition ?? "",
-    in_date: c.in_date ?? "",
-    in_time: c.in_time ?? "",
-    cargo: c.cargo ?? "",
-    category: c.category ?? "",
-    account: c.account ?? "",
-    yard_position: c.yard_position ?? "",
-  };
+  return { ...containerToRow(c), __id: c.id };
 }
 
 export function InventoryUpdate({ centre }: { centre: Centre }) {
   const qc = useQueryClient();
-  const { inwardColumns } = useFieldOptions(centre.id);
+  const { inwardColumns, cfg } = useFieldOptions(centre.id);
   const { data: containers = [] } = useQuery({
     queryKey: ["containers", centre.id],
     queryFn: () => api.containers(centre.id),
@@ -68,25 +50,8 @@ export function InventoryUpdate({ centre }: { centre: Centre }) {
     }
     try {
       for (const r of changed) {
-        await api.updateContainer(r.__id, {
-          container_no: r.container_no.toUpperCase(),
-          mode: r.mode || null,
-          rail_ownership: r.rail_ownership || null,
-          rake_name: r.rake_name || null,
-          size: r.size || null,
-          ctr_type: r.ctr_type || null,
-          dry_subtype: r.dry_subtype || null,
-          ownership: r.ownership || null,
-          status: r.status || null,
-          weight: r.weight ? Number(r.weight) : null,
-          condition: r.condition || null,
-          in_date: r.in_date || null,
-          in_time: r.in_time || null,
-          cargo: r.cargo || null,
-          category: r.category || null,
-          account: r.account || null,
-          yard_position: r.yard_position || null,
-        });
+        const { centre_id: _c, ...patch } = draftToRow(r as Partial<EntryDraft> & Record<string, string>, centre.id);
+        await api.updateContainer(r.__id, patch);
       }
       logAction(centre.id, centre.name, "Inventory update", `${changed.length} containers updated`);
       toast.success(`${changed.length} container(s) updated.`);
@@ -135,6 +100,7 @@ export function InventoryUpdate({ centre }: { centre: Centre }) {
 
       {showUpload ? (
         <FlexiUpload
+          customColumns={cfg.custom}
           onParsed={(result) => {
             let matched = 0;
             setRows((rs) =>
@@ -142,18 +108,29 @@ export function InventoryUpdate({ centre }: { centre: Centre }) {
                 const hit = result.rows.find((p) => p.containerNo === r.container_no);
                 if (!hit) return r;
                 matched++;
+                const custom: Record<string, string> = {};
+                for (const [k, v] of Object.entries(hit.custom ?? {})) custom[`${CUSTOM_PREFIX}${k}`] = v;
+                const pick = (v: string | undefined, cur: string | undefined) => v ?? cur ?? "";
                 return {
                   ...r,
-                  size: hit.size ?? r.size,
-                  ctr_type: hit.ctrType ?? r.ctr_type,
-                  dry_subtype: hit.drySubtype ?? r.dry_subtype,
-                  status: hit.status ?? r.status,
-                  weight: hit.weight ?? r.weight,
-                  cargo: hit.cargo ?? r.cargo,
-                  account: hit.account ?? r.account,
-                  category: hit.category ?? r.category,
-                  condition: hit.condition ?? r.condition,
-                  yard_position: hit.yardPosition ?? r.yard_position,
+                  ...custom,
+                  size: pick(hit.size, r.size),
+                  ctr_type: pick(hit.ctrType, r.ctr_type),
+                  dry_subtype: pick(hit.drySubtype, r.dry_subtype),
+                  status: pick(hit.status, r.status),
+                  weight: pick(hit.weight, r.weight),
+                  net_weight: pick(hit.netWeight, r.net_weight),
+                  seal_no: pick(hit.sealNo, r.seal_no),
+                  inward_bill_no: pick(hit.inwardBillNo, r.inward_bill_no),
+                  lessor: pick(hit.lessor, r.lessor),
+                  ownership: pick(hit.ownership, r.ownership),
+                  truck_no: pick(hit.truckNo, r.truck_no),
+                  cargo: pick(hit.cargo, r.cargo),
+                  account: pick(hit.account, r.account),
+                  category: pick(hit.category, r.category),
+                  condition: pick(hit.condition, r.condition),
+                  yard_position: pick(hit.yardPosition, r.yard_position),
+                  in_date: pick(hit.inDate, r.in_date),
                 };
               }),
             );
@@ -171,7 +148,7 @@ export function InventoryUpdate({ centre }: { centre: Centre }) {
       ) : null}
 
       <EditableGrid
-        columns={inwardColumns}
+        columns={inwardColumns(rows)}
         rows={rows}
         selectable
         selected={selected}

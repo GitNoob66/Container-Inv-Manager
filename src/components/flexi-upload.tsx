@@ -1,10 +1,17 @@
 import { FileSpreadsheet, UploadCloud } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import type { CustomColumn } from "@/lib/api";
 import { parseContainerFile, type ParseResult } from "@/lib/excel-parse";
 import { cn } from "@/lib/utils";
 
-export function FlexiUpload({ onParsed }: { onParsed: (result: ParseResult, fileName: string) => void }) {
+export function FlexiUpload({
+  onParsed,
+  customColumns = [],
+}: {
+  onParsed: (result: ParseResult, fileName: string) => void;
+  customColumns?: CustomColumn[];
+}) {
   const [dragging, setDragging] = useState(false);
   const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -13,12 +20,12 @@ export function FlexiUpload({ onParsed }: { onParsed: (result: ParseResult, file
     if (!file) return;
     setBusy(true);
     try {
-      const result = await parseContainerFile(file);
+      const result = await parseContainerFile(file, customColumns);
       onParsed(result, file.name);
       if (result.rows.length) {
         toast.success(`${result.rows.length} container numbers read from ${file.name}`);
       }
-      result.warnings.forEach((w) => toast.warning(w, { duration: 8000 }));
+      result.warnings.forEach((w) => toast.warning(w, { duration: 10000 }));
     } catch (e) {
       toast.error(`Could not read that file: ${(e as Error).message}`);
     } finally {

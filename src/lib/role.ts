@@ -1,53 +1,63 @@
 import { useEffect, useState } from "react";
 
 /**
- * Working role for this PC/browser. There is no login, so this is an operating
- * mode that shapes the screens, not a security boundary.
+ * Signed-in role for this window. Login is checked against the stored password,
+ * and the session lasts until the user logs out or closes the program/tab.
  */
 export type AppRole = { kind: "master" } | { kind: "centre"; centreId: string };
 
-const KEY = "cim.role";
+const KEY = "cim.auth";
 const EVENT = "cim-role-change";
-const DEFAULT_ROLE: AppRole = { kind: "master" };
 
-function readRole(): AppRole {
+function readRole(): AppRole | null {
   try {
-    const raw = window.localStorage.getItem(KEY);
-    if (!raw) return DEFAULT_ROLE;
+    const raw = window.sessionStorage.getItem(KEY);
+    if (!raw) return null;
     const parsed = JSON.parse(raw) as AppRole;
+    if (parsed.kind === "master") return parsed;
     if (parsed.kind === "centre" && typeof parsed.centreId === "string" && parsed.centreId) return parsed;
-    return DEFAULT_ROLE;
+    return null;
   } catch {
-    return DEFAULT_ROLE;
+    return null;
   }
 }
 
-export function setRole(role: AppRole) {
-  window.localStorage.setItem(KEY, JSON.stringify(role));
+export function setRole(role: AppRole | null) {
+  if (role) window.sessionStorage.setItem(KEY, JSON.stringify(role));
+  else window.sessionStorage.removeItem(KEY);
   window.dispatchEvent(new Event(EVENT));
 }
 
-export function useRole(): AppRole {
-  const [role, setState] = useState<AppRole>(DEFAULT_ROLE);
-  useEffect(() => {
-    const sync = () => setState(readRole());
-    sync();
-    window.addEventListener(EVENT, sync);
-    window.addEventListener("storage", sync);
-    return () => {
-      window.removeEventListener(EVENT, sync);
-      window.removeEventListener("storage", sync);
-    };
-  }, []);
-  return role;
+export function logout() {
+  setRole(null);
 }
 
-/** Centre users may only work inside their own centre. */
+/** Current session: `ready` is false until browser storage has been read. */
+export function useAuth(): { role: AppRole | null; ready: boolean } {
+  const [state, setState] = useState<{ role: AppRole | null; ready: boolean }>({
+    role: null,
+    ready: false,
+  });
+  useEffect(() => {
+    const sync = () => setState({ role: readRole(), ready: true });
+    sync();
+    window.addEventListener(EVENT, sync);
+    return () => window.removeEventListener(EVENT, sync);
+  }, []);
+  return state;
+}
+
+/** Signed-in role; screens only render after login, so a fallback is never shown. */
+export function useRole(): AppRole {
+  return useAuth().role ?? { kind: "master" };
+}
+
+/** Centre users may only work inside their own centre; the admin can open every centre. */
 export function canAccessCentre(role: AppRole, centreId: string): boolean {
   return role.kind === "master" || role.centreId === centreId;
 }
 
-/** Vehicles are managed locally by the centre; the master user only views them. */
+/** Vehicles are managed locally by the centre; the admin only views them. */
 export function canEditVehicles(role: AppRole, centreId: string): boolean {
   return role.kind === "centre" && role.centreId === centreId;
 }
