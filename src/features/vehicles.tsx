@@ -42,7 +42,10 @@ export function Vehicles({ centre }: { centre: Centre }) {
 
   const save = async () => {
     const no = draft.vehicle_no.trim().toUpperCase();
-    if (!no) return toast.error("Vehicle number is required.");
+    if (!no) {
+      toast.error("Vehicle number is required.");
+      return;
+    }
     try {
       const clean = (v: string | null) => (v && v.trim() ? v.trim() : null);
       await api.upsertVehicle({
