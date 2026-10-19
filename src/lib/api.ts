@@ -48,6 +48,18 @@ export type Container = {
   updated_at: string;
 };
 
+export type Vehicle = {
+  id: string;
+  centre_id: string;
+  vehicle_no: string;
+  vehicle_type: string | null;
+  transporter: string | null;
+  driver_name: string | null;
+  driver_phone: string | null;
+  remarks: string | null;
+  created_at: string;
+};
+
 export type ActivityLog = {
   id: string;
   centre_id: string | null;
@@ -199,6 +211,24 @@ const cloudApi = {
         .lte("out_date", to)
         .order("out_date", { ascending: false }),
     );
+  },
+
+  async vehicles(centreId?: string): Promise<Vehicle[]> {
+    let q = supabase.from("vehicles").select("*").order("vehicle_no");
+    if (centreId) q = q.eq("centre_id", centreId);
+    return unwrap(await q) as Vehicle[];
+  },
+  async upsertVehicle(row: Partial<Vehicle>): Promise<Vehicle> {
+    if (row.id) {
+      return unwrap(
+        await supabase.from("vehicles").update(row as never).eq("id", row.id).select().single(),
+      ) as Vehicle;
+    }
+    return unwrap(await supabase.from("vehicles").insert(row as never).select().single()) as Vehicle;
+  },
+  async deleteVehicle(id: string) {
+    const { error } = await supabase.from("vehicles").delete().eq("id", id);
+    if (error) throw new Error(error.message);
   },
 
   async logs(centreId: string, since?: string): Promise<ActivityLog[]> {
