@@ -47,7 +47,7 @@ export function Picker({
   placeholder?: string;
 }) {
   return (
-    <Select value={value || undefined} onValueChange={onChange}>
+    <Select value={value ?? ""} onValueChange={onChange}>
       <SelectTrigger>
         <SelectValue placeholder={placeholder ?? "Select"} />
       </SelectTrigger>

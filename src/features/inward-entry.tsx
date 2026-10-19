@@ -34,7 +34,6 @@ export function InwardEntry({ centre }: { centre: Centre }) {
   const set = (patch: Partial<EntryDraft>) => setDraft((d) => ({ ...d, ...patch }) as EntryDraft);
 
   const saveManual = async () => {
-    console.log("DBG", draft.mode, draft.wagon_no, JSON.stringify(wagons.loads));
     const check = validateContainerNo(draft.container_no);
     if (!check.normalized) {
       toast.error("Enter a container number.");
