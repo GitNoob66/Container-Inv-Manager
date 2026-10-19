@@ -255,6 +255,50 @@ export type Database = {
         }
         Relationships: []
       }
+      vehicles: {
+        Row: {
+          centre_id: string
+          created_at: string
+          driver_name: string | null
+          driver_phone: string | null
+          id: string
+          remarks: string | null
+          transporter: string | null
+          vehicle_no: string
+          vehicle_type: string | null
+        }
+        Insert: {
+          centre_id: string
+          created_at?: string
+          driver_name?: string | null
+          driver_phone?: string | null
+          id?: string
+          remarks?: string | null
+          transporter?: string | null
+          vehicle_no: string
+          vehicle_type?: string | null
+        }
+        Update: {
+          centre_id?: string
+          created_at?: string
+          driver_name?: string | null
+          driver_phone?: string | null
+          id?: string
+          remarks?: string | null
+          transporter?: string | null
+          vehicle_no?: string
+          vehicle_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicles_centre_id_fkey"
+            columns: ["centre_id"]
+            isOneToOne: false
+            referencedRelation: "centres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       yard_positions: {
         Row: {
           centre_id: string
