@@ -97,7 +97,7 @@ export type ActivityLog = {
   created_at: string;
 };
 
-function unwrap<T>({ data, error }: { data: T | null; error: { message: string } | null }): T {
+function unwrap<T>({ data, error }: { data: unknown; error: { message: string } | null }): T {
   if (error) throw new Error(error.message);
   return data as T;
 }
@@ -201,7 +201,7 @@ const cloudApi = {
     );
   },
   async allContainers(): Promise<Container[]> {
-    return unwrap(await supabase.from("containers").select("*").order("created_at", { ascending: false }));
+    return unwrap(await supabase.from("containers").select("*").order("created_at", { ascending: false })) as unknown as Container[];
   },
   async searchContainers(term: string): Promise<Container[]> {
     return unwrap(

@@ -11,6 +11,8 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
+import { LoginScreen } from "@/components/login-screen";
+import { useAuth } from "@/lib/role";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -139,8 +141,18 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <AuthGate>
+        <Outlet />
+      </AuthGate>
       <Toaster richColors position="top-right" />
     </QueryClientProvider>
   );
+}
+
+/** Every screen needs a login first: Admin or a centre user with that centre's password. */
+function AuthGate({ children }: { children: ReactNode }) {
+  const { role, ready } = useAuth();
+  if (!ready) return <div className="min-h-screen bg-background" />;
+  if (!role) return <LoginScreen />;
+  return <>{children}</>;
 }

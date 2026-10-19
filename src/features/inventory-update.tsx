@@ -100,7 +100,7 @@ export function InventoryUpdate({ centre }: { centre: Centre }) {
 
       {showUpload ? (
         <FlexiUpload
-          customColumns={cfg.custom}
+          customColumns={cfg.config}
           onParsed={(result) => {
             let matched = 0;
             setRows((rs) =>

@@ -223,7 +223,7 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
           {bulk.out_mode === "Rail" ? (
             <BulkField label="Rake Own / Other">
               <Select
-                value={bulk.out_rail_ownership || undefined}
+                value={bulk.out_rail_ownership}
                 onValueChange={(v) => setBulk((b) => ({ ...b, out_rail_ownership: v, out_rake_name: "" }))}
               >
                 <SelectTrigger>
@@ -242,7 +242,7 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
           {bulk.out_mode === "Rail" && bulk.out_rail_ownership === "Own" ? (
             <BulkField label="Rake">
               <Select
-                value={bulk.out_rake_name || undefined}
+                value={bulk.out_rake_name}
                 onValueChange={(v) => setBulk((b) => ({ ...b, out_rake_name: v }))}
               >
                 <SelectTrigger>
@@ -295,7 +295,7 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
 
       <TabsContent value="flexi" className="space-y-4">
         <FlexiUpload
-          customColumns={cfg.custom}
+          customColumns={cfg.config}
           onParsed={(result) => {
             const matched = base
               .filter((r) => result.rows.some((p) => p.containerNo === r.container_no))

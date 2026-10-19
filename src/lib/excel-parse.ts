@@ -177,13 +177,23 @@ function normDate(raw: string): string | undefined {
   return undefined;
 }
 
+/** Renamed standard columns (Settings) are read from Excel under their new heading. */
+const BUILTIN_TO_FIELD: Record<string, keyof ParsedRow> = {
+  container_no: "containerNo", truck_no: "truckNo", seal_no: "sealNo", inward_bill_no: "inwardBillNo",
+  net_weight: "netWeight", lessor: "lessor", size: "size", ctr_type: "ctrType", dry_subtype: "drySubtype",
+  status: "status", weight: "weight", cargo: "cargo", account: "account", category: "category",
+  condition: "condition", yard_position: "yardPosition", ownership: "ownership", in_date: "inDate",
+  in_time: "inTime", destination: "destination",
+};
+
 type FieldKey = keyof ParsedRow | `custom:${string}`;
 
 function matchField(header: string, custom: CustomColumn[] = []): FieldKey | null {
   const k = key(header);
   if (!k) return null;
-  const c = custom.find((col) => key(col.label) === k || key(col.key) === k);
-  if (c) return `custom:${c.key}`;
+  const c = custom.find((col) => key(col.label) === k || (!col.builtin && key(col.key) === k));
+  if (c && !c.builtin) return `custom:${c.key}`;
+  if (c && c.builtin && BUILTIN_TO_FIELD[c.key]) return BUILTIN_TO_FIELD[c.key]!;
   if (CONTAINER_HEADERS.includes(k)) return "containerNo";
   if (k.includes("container") && (k.includes("no") || k.includes("num"))) return "containerNo";
   for (const [field, list] of Object.entries(SYNONYMS)) {
@@ -493,6 +503,6 @@ export function parsedToRow(
     account: r.account ?? "",
     yard_position: r.yardPosition ?? "",
   };
-  for (const c of custom) row[`${prefix}${c.key}`] = r.custom?.[c.key] ?? "";
+  for (const c of custom.filter((x) => !x.builtin)) row[`${prefix}${c.key}`] = r.custom?.[c.key] ?? "";
   return row;
 }

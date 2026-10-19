@@ -1,13 +1,16 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Building2,
   Check,
   ChevronsUpDown,
   Container as ContainerIcon,
   FileSpreadsheet,
+  LogOut,
   ScrollText,
+  Settings,
   Train,
+  Truck,
   Warehouse,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
@@ -26,22 +29,16 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LocalBackupControls } from "@/components/local-backup-controls";
 import { ResetDataDialog } from "@/components/reset-data-dialog";
-import { setRole, useRole } from "@/lib/role";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { logout, useRole } from "@/lib/role";
+import { logAction } from "@/lib/session";
 
 export const CENTRE_SECTIONS = [
+  { key: "overview", label: "Overview" },
   { key: "inward", label: "Inward Entry" },
   { key: "inventory", label: "Inventory Update" },
   { key: "yard", label: "Yard Positions" },
   { key: "size-type", label: "Size / Type Update" },
   { key: "outward", label: "Outward Entry" },
-  { key: "vehicles", label: "Vehicle Management" },
   { key: "log", label: "Master Log" },
 ];
 
@@ -78,7 +75,7 @@ export function CentrePicker({ centreId }: { centreId?: string }) {
                     setOpen(false);
                     navigate({
                       to: "/centre/$centreId/$section",
-                      params: { centreId: c.id, section: "inward" },
+                      params: { centreId: c.id, section: "overview" },
                     });
                   }}
                 >
@@ -96,40 +93,31 @@ export function CentrePicker({ centreId }: { centreId?: string }) {
   );
 }
 
-function RoleSwitcher() {
+function SignedInAs() {
   const role = useRole();
-  const navigate = useNavigate();
+  const qc = useQueryClient();
   const { data: centres = [] } = useQuery({ queryKey: ["centres"], queryFn: api.centres });
-  const value = role.kind === "master" ? "master" : role.centreId;
+  const name = role.kind === "master" ? "Admin" : `Centre User · ${centres.find((c) => c.id === role.centreId)?.name ?? ""}`;
   return (
-    <div className="mb-4 space-y-1">
-      <div className="px-1 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
-        Working as
+    <div className="mb-4 flex items-center justify-between gap-2 rounded-md border border-sidebar-border bg-sidebar-accent px-3 py-2">
+      <div className="min-w-0">
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">Signed in as</div>
+        <div className="truncate text-sm text-sidebar-accent-foreground">{name}</div>
       </div>
-      <Select
-        value={value}
-        onValueChange={(v) => {
-          if (v === "master") {
-            setRole({ kind: "master" });
-            void navigate({ to: "/" });
-          } else {
-            setRole({ kind: "centre", centreId: v });
-            void navigate({ to: "/centre/$centreId/$section", params: { centreId: v, section: "inward" } });
-          }
+      <Button
+        size="icon"
+        variant="ghost"
+        aria-label="Log out"
+        title="Log out"
+        className="text-sidebar-accent-foreground hover:bg-sidebar/40"
+        onClick={() => {
+          logAction(role.kind === "centre" ? role.centreId : null, null, "Logged out", name);
+          qc.clear();
+          logout();
         }}
       >
-        <SelectTrigger aria-label="Working role" className="border-sidebar-border bg-sidebar-accent text-sidebar-accent-foreground">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="master">Master User</SelectItem>
-          {centres.map((c) => (
-            <SelectItem key={c.id} value={c.id}>
-              Centre User · {c.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        <LogOut className="size-4" />
+      </Button>
     </div>
   );
 }
@@ -174,7 +162,7 @@ export function AppShell({
           </div>
         </Link>
 
-        <RoleSwitcher />
+        <SignedInAs />
 
         <Link to="/" className={navClass(pathname === "/")}>
           <Warehouse className="size-4" />
@@ -220,6 +208,14 @@ export function AppShell({
               <Train className="size-4" />D · Rake Manager
             </Link>
           ) : null}
+          <Link to="/vehicles" className={navClass(pathname === "/vehicles")}>
+            <Truck className="size-4" />
+            {isMaster ? "E" : "D"} · Vehicle Management
+          </Link>
+          <Link to="/settings" className={navClass(pathname === "/settings")}>
+            <Settings className="size-4" />
+            {isMaster ? "F" : "E"} · Settings
+          </Link>
         </div>
 
         <div className="mt-auto space-y-2 pt-6">
@@ -258,6 +254,12 @@ export function AppShell({
                 <Link to="/rakes">Rakes</Link>
               </Button>
             ) : null}
+            <Button asChild size="sm" variant="secondary">
+              <Link to="/vehicles">Vehicles</Link>
+            </Button>
+            <Button asChild size="sm" variant="secondary">
+              <Link to="/settings">Settings</Link>
+            </Button>
           </div>
         </div>
       </div>
