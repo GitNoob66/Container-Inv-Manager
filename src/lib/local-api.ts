@@ -262,6 +262,7 @@ export const localApi = {
       data.centres = data.centres.filter((row) => row.id !== id);
       data.yardPositions = data.yardPositions.filter((row) => row.centre_id !== id);
       data.containers = data.containers.filter((row) => row.centre_id !== id);
+      data.vehicles = data.vehicles.filter((row) => row.centre_id !== id);
     });
   },
   async yardPositions(centreId: string): Promise<YardPosition[]> {

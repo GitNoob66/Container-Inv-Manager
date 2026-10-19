@@ -94,6 +94,35 @@ export function buildContainerWorkbook(
   return wb;
 }
 
+const VEHICLE_HEADERS = ["Centre", "Vehicle No.", "Vehicle Type", "Transporter", "Driver Name", "Driver Phone", "Remarks", "Registered On"];
+
+export function buildVehicleWorkbook(vehicles: Vehicle[], centreNameById: Record<string, string>) {
+  const body = vehicles.map((v) => [
+    centreNameById[v.centre_id] ?? "",
+    v.vehicle_no,
+    v.vehicle_type ?? "",
+    v.transporter ?? "",
+    v.driver_name ?? "",
+    v.driver_phone ?? "",
+    v.remarks ?? "",
+    v.created_at.slice(0, 10),
+  ]);
+  const aoa = [["Vehicle Register — All Centres"], [`Generated: ${new Date().toLocaleString()}`], [], VEHICLE_HEADERS, ...body];
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws["!cols"] = VEHICLE_HEADERS.map((h, i) => ({
+    wch: Math.max(h.length + 2, ...body.map((r) => String(r[i] ?? "").length + 2), 12),
+  }));
+  for (let c = 0; c < VEHICLE_HEADERS.length; c++) {
+    const cell = ws[XLSX.utils.encode_cell({ r: 3, c })];
+    if (cell) cell.s = { font: { bold: true, name: "Google Sans", sz: 11 }, alignment: { horizontal: "center", vertical: "center" } };
+  }
+  const titleCell = ws[XLSX.utils.encode_cell({ r: 0, c: 0 })];
+  if (titleCell) titleCell.s = { font: { bold: true, name: "Google Sans", sz: 14 } };
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Vehicles");
+  return wb;
+}
+
 export function downloadWorkbook(wb: XLSX.WorkBook, filename: string) {
   XLSX.writeFile(wb, filename, { compression: true });
 }
