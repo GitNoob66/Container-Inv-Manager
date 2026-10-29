@@ -129,11 +129,13 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
     }
     setSelected(ids);
   };
-  const changeMode = (mode: string) => {
-    setBulk((b) => ({ ...b, out_mode: mode }));
+  // every change in the fields above is copied straight onto the ticked containers
+  const updateBulk = (patch: Partial<typeof bulk>) => {
+    setBulk((b) => ({ ...b, ...patch }));
     const sel = new Set(selected);
-    setRows((rs) => rs.map((r) => (sel.has(r.__id) ? { ...r, out_mode: mode } : r)));
+    if (sel.size) setRows((rs) => rs.map((r) => (sel.has(r.__id) ? { ...r, ...patch } : r)));
   };
+  const changeMode = (mode: string) => updateBulk({ out_mode: mode });
 
   const applyBulk = () => {
     setRows((rs) =>
