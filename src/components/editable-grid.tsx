@@ -183,7 +183,7 @@ const GridRowView = memo(function GridRowView({
 });
 
 export function EditableGrid({
-  columns,
+  columns: columnsProp,
   rows,
   onCellChange,
   onColumnFill,
@@ -193,6 +193,10 @@ export function EditableGrid({
   validateContainerColumn,
   emptyMessage = "No rows yet.",
 }: Props) {
+  // parents rebuild column arrays every render; keep one reference while the content is the same
+  const colKey = JSON.stringify(columnsProp);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const columns = useMemo(() => columnsProp, [colKey]);
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [search, setSearch] = useState("");
   const [fillColumn, setFillColumn] = useState<GridColumn | null>(null);
