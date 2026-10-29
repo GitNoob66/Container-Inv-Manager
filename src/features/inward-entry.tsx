@@ -7,9 +7,11 @@ import { FlexiUpload } from "@/components/flexi-upload";
 import { ManualEntryFields } from "@/components/manual-entry";
 import { WagonControls } from "@/components/wagon-controls";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api, type Centre } from "@/lib/api";
-import { CUSTOM_PREFIX, draftToRow, emptyDraft, type EntryDraft } from "@/lib/container-fields";
+import { CUSTOM_PREFIX, draftToRow, MODES, emptyDraft, type EntryDraft } from "@/lib/container-fields";
 import { parsedToRow } from "@/lib/excel-parse";
 import { validateContainerNo } from "@/lib/iso6346";
 import { logAction } from "@/lib/session";
@@ -28,6 +30,8 @@ export function InwardEntry({ centre }: { centre: Centre }) {
   const [draft, setDraft] = useState<EntryDraft>(emptyDraft());
   const [rows, setRows] = useState<GridRow[]>([]);
   const [saving, setSaving] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [flexiMode, setFlexiMode] = useState("Road");
   const { inwardColumns, cfg } = useFieldOptions(centre.id);
   const wagons = useWagonSession(`${centre.id}:inward`);
 
@@ -100,6 +104,7 @@ export function InwardEntry({ centre }: { centre: Centre }) {
         );
       }
       setRows([]);
+      setSelected([]);
       void qc.invalidateQueries({ queryKey: ["containers"] });
     } catch (e) {
       toast.error((e as Error).message);
@@ -134,6 +139,18 @@ export function InwardEntry({ centre }: { centre: Centre }) {
       return;
     }
     setRows((rs) => rs.map((r) => ({ ...r, [key]: value })));
+  };
+
+  // selected containers follow the Mode chosen above the list; with nothing selected it applies to all
+  const selectRows = (ids: string[]) => {
+    const added = new Set(ids.filter((id) => !selected.includes(id)));
+    if (added.size) setRows((rs) => rs.map((r) => (added.has(r.__id) ? { ...r, mode: flexiMode } : r)));
+    setSelected(ids);
+  };
+  const changeFlexiMode = (mode: string) => {
+    setFlexiMode(mode);
+    const sel = new Set(selected);
+    setRows((rs) => rs.map((r) => (sel.size === 0 || sel.has(r.__id) ? { ...r, mode } : r)));
   };
 
   const manualRail = draft.mode === "Rail";
@@ -179,14 +196,41 @@ export function InwardEntry({ centre }: { centre: Centre }) {
             onParsed={(result, fileName) => {
               const base = emptyDraft();
               setRows(result.rows.map((r, i) => ({ __id: `r${i}`, ...parsedToRow(r, base, cfg.custom, CUSTOM_PREFIX) })));
+              setSelected([]);
+              setFlexiMode(base.mode || "Road");
               logAction(centre.id, centre.name, "Flexi upload", `${fileName}: ${result.rows.length} containers read`);
             }}
           />
         ) : (
           <>
+            <div className="panel flex flex-wrap items-end gap-3 p-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Mode</Label>
+                <Select value={flexiMode} onValueChange={changeFlexiMode}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MODES.map((m) => (
+                      <SelectItem key={m} value={m}>
+                        {m}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="pb-2 text-xs text-muted-foreground">
+                {selected.length
+                  ? `Applies to the ${selected.length} selected container(s).`
+                  : "Applies to all containers. Tick containers to set it for those only."}
+              </p>
+            </div>
             <EditableGrid
               columns={inwardColumns(rows, { wagons: openWagons })}
               rows={rows}
+              selectable
+              selected={selected}
+              onSelectedChange={selectRows}
               validateContainerColumn="container_no"
               onCellChange={changeCell}
               onColumnFill={fillColumn}
@@ -195,7 +239,13 @@ export function InwardEntry({ centre }: { centre: Centre }) {
               <Button onClick={saveFlexi} disabled={saving}>
                 <Save className="mr-2 size-4" /> Save {rows.length} containers
               </Button>
-              <Button variant="secondary" onClick={() => setRows([])}>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setRows([]);
+                  setSelected([]);
+                }}
+              >
                 <RotateCcw className="mr-2 size-4" /> Reset / upload another file
               </Button>
               {flexiRail ? <WagonControls sessionKey={`${centre.id}:inward`} /> : null}
