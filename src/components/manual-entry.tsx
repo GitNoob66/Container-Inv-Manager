@@ -185,12 +185,20 @@ export function ManualEntryFields({
 
       {movementMode === "Rail" && show("wagon_no") ? (
         <Field label={L("wagon_no", "Wagon Number")}>
-          <Picker
+          <Input
+            list={`wagons-${isOut ? "out" : "in"}`}
+            className="num uppercase"
             value={wagonNo}
-            options={wagonNo && !wagonOptions.includes(wagonNo) ? [wagonNo, ...wagonOptions] : wagonOptions}
-            placeholder={wagonOptions.length ? "Select wagon" : "Upload wagon details first"}
-            onChange={(v) => set(isOut ? { out_wagon_no: v } : { wagon_no: v })}
+            placeholder={wagonOptions.length ? "Type or pick a wagon" : "Type wagon number"}
+            onChange={(e) =>
+              set(isOut ? { out_wagon_no: e.target.value.toUpperCase() } : { wagon_no: e.target.value.toUpperCase() })
+            }
           />
+          <datalist id={`wagons-${isOut ? "out" : "in"}`}>
+            {wagonOptions.map((w) => (
+              <option key={w} value={w} />
+            ))}
+          </datalist>
         </Field>
       ) : null}
 
