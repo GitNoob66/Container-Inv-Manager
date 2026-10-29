@@ -170,6 +170,7 @@ export function outwardPatch(r: Record<string, string>, base: Record<string, str
     out_time: r.out_time || null,
     destination: r.destination || null,
     remarks: r.remarks || null,
+    cargo: r.cargo || null,
     yard_position: r.yard_position || null,
     custom_fields: { ...customFromRow(base), ...customFromRow(r) },
     dispatched: true,
