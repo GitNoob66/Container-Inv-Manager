@@ -125,7 +125,7 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
   const selectRows = (ids: string[]) => {
     const added = new Set(ids.filter((id) => !selected.includes(id)));
     if (added.size) {
-      setRows((rs) => rs.map((r) => (added.has(r.__id) && r.out_mode !== bulk.out_mode ? { ...r, out_mode: bulk.out_mode } : r)));
+      setRows((rs) => rs.map((r) => (added.has(r.__id) ? { ...r, out_mode: bulk.out_mode, out_rail_ownership: bulk.out_rail_ownership, out_rake_name: bulk.out_rake_name, ...(bulk.out_truck_no ? { out_truck_no: bulk.out_truck_no } : {}) } : r)));
     }
     setSelected(ids);
   };
@@ -227,7 +227,7 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
                 list={listId}
                 className="num uppercase"
                 value={bulk.out_truck_no}
-                onChange={(e) => setBulk((b) => ({ ...b, out_truck_no: e.target.value.toUpperCase() }))}
+                onChange={(e) => updateBulk({ out_truck_no: e.target.value.toUpperCase() })}
               />
               <datalist id={listId}>
                 {truckNos.map((t) => (
@@ -240,7 +240,7 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
             <BulkField label="Rake Own / Other">
               <Select
                 value={bulk.out_rail_ownership}
-                onValueChange={(v) => setBulk((b) => ({ ...b, out_rail_ownership: v, out_rake_name: "" }))}
+                onValueChange={(v) => updateBulk({ out_rail_ownership: v, out_rake_name: "" })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select" />
@@ -259,7 +259,7 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
             <BulkField label="Rake">
               <Select
                 value={bulk.out_rake_name}
-                onValueChange={(v) => setBulk((b) => ({ ...b, out_rake_name: v }))}
+                onValueChange={(v) => updateBulk({ out_rake_name: v })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select rake" />
@@ -278,21 +278,21 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
             <BulkField label="Rake Name">
               <Input
                 value={bulk.out_rake_name}
-                onChange={(e) => setBulk((b) => ({ ...b, out_rake_name: e.target.value }))}
+                onChange={(e) => updateBulk({ out_rake_name: e.target.value })}
               />
             </BulkField>
           ) : null}
           <BulkField label="Out Date">
-            <Input type="date" value={bulk.out_date} onChange={(e) => setBulk((b) => ({ ...b, out_date: e.target.value }))} />
+            <Input type="date" value={bulk.out_date} onChange={(e) => updateBulk({ out_date: e.target.value })} />
           </BulkField>
           <BulkField label="Out Time (24h)">
-            <Input type="time" value={bulk.out_time} onChange={(e) => setBulk((b) => ({ ...b, out_time: e.target.value }))} />
+            <Input type="time" value={bulk.out_time} onChange={(e) => updateBulk({ out_time: e.target.value })} />
           </BulkField>
           <BulkField label={cfg.label("destination", "Destination")}>
-            <Input value={bulk.destination} onChange={(e) => setBulk((b) => ({ ...b, destination: e.target.value }))} />
+            <Input value={bulk.destination} onChange={(e) => updateBulk({ destination: e.target.value })} />
           </BulkField>
           <BulkField label={cfg.label("remarks", "Remarks")}>
-            <Input value={bulk.remarks} onChange={(e) => setBulk((b) => ({ ...b, remarks: e.target.value }))} />
+            <Input value={bulk.remarks} onChange={(e) => updateBulk({ remarks: e.target.value })} />
           </BulkField>
           <div className="flex items-end">
             <Button variant="secondary" onClick={applyBulk} className="w-full">
