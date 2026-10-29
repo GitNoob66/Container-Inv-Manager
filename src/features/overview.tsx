@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useMemo } from "react";
 import { api, teuFor } from "@/lib/api";
 
@@ -29,10 +29,13 @@ export function InventoryOverview({ centreId }: { centreId?: string }) {
     const c20 = count((s) => s.startsWith("20"));
     const c40 = count((s) => s.startsWith("40"));
     const c45 = count((s) => s.startsWith("45"));
-    const party = new Map<string, number>();
+    const party = new Map<string, { loaded: number; empty: number }>();
     for (const c of stock) {
       const k = c.account?.trim() || "Not set";
-      party.set(k, (party.get(k) ?? 0) + 1);
+      const p = party.get(k) ?? { loaded: 0, empty: 0 };
+      if (c.status === "Loaded") p.loaded++;
+      else p.empty++;
+      party.set(k, p);
     }
     return {
       total: stock.length,
@@ -43,7 +46,10 @@ export function InventoryOverview({ centreId }: { centreId?: string }) {
       inward30: rows.filter((c) => (c.in_date ?? "") >= since).length,
       out30: rows.filter((c) => c.dispatched && (c.out_date ?? "") >= since).length,
       isoFlagged: stock.filter((c) => c.iso_valid === false).length,
-      parties: [...party.entries()].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 15),
+      parties: [...party.entries()]
+        .map(([name, p]) => ({ name, Loaded: p.loaded, Empty: p.empty, total: p.loaded + p.empty }))
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 15),
     };
   }, [all, centreId]);
 
@@ -69,8 +75,16 @@ export function InventoryOverview({ centreId }: { centreId?: string }) {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis type="number" allowDecimals={false} stroke="var(--muted-foreground)" fontSize={12} />
                 <YAxis type="category" dataKey="name" width={120} stroke="var(--muted-foreground)" fontSize={12} />
-                <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--foreground)" }} />
-                <Bar dataKey="count" name="Containers" fill="var(--accent)" radius={[0, 4, 4, 0]} isAnimationActive={false} />
+                <Tooltip
+                  contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--foreground)" }}
+                  labelFormatter={(name, payload) => {
+                    const total = (payload?.[0]?.payload as { total?: number } | undefined)?.total;
+                    return total !== undefined ? `${name} — ${total} total` : String(name);
+                  }}
+                />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Bar dataKey="Loaded" stackId="p" fill="var(--accent)" isAnimationActive={false} />
+                <Bar dataKey="Empty" stackId="p" fill="var(--muted-foreground)" radius={[0, 4, 4, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
