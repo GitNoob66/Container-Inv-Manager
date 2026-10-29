@@ -121,6 +121,20 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
     }
   };
 
+  // selected containers always follow the Out Mode chosen above
+  const selectRows = (ids: string[]) => {
+    const added = new Set(ids.filter((id) => !selected.includes(id)));
+    if (added.size) {
+      setRows((rs) => rs.map((r) => (added.has(r.__id) && r.out_mode !== bulk.out_mode ? { ...r, out_mode: bulk.out_mode } : r)));
+    }
+    setSelected(ids);
+  };
+  const changeMode = (mode: string) => {
+    setBulk((b) => ({ ...b, out_mode: mode }));
+    const sel = new Set(selected);
+    setRows((rs) => rs.map((r) => (sel.has(r.__id) ? { ...r, out_mode: mode } : r)));
+  };
+
   const applyBulk = () => {
     setRows((rs) =>
       rs.map((r) => (selected.length === 0 || selected.includes(r.__id) ? { ...r, ...bulk } : r)),
@@ -167,7 +181,7 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
       rows={rows}
       selectable
       selected={selected}
-      onSelectedChange={setSelected}
+      onSelectedChange={selectRows}
       validateContainerColumn="container_no"
       onCellChange={changeCell}
       onColumnFill={fillColumn}
@@ -192,7 +206,7 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
       <TabsContent value="manual" className="space-y-4">
         <div className="panel grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-5">
           <BulkField label="Out Mode">
-            <Select value={bulk.out_mode} onValueChange={(v) => setBulk((b) => ({ ...b, out_mode: v }))}>
+            <Select value={bulk.out_mode} onValueChange={changeMode}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -309,7 +323,7 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
                 };
               });
             const missing = result.rows.filter((p) => !base.some((r) => r.container_no === p.containerNo));
-            setRows(matched);
+            setRows(matched.map((r) => ({ ...r, out_mode: bulk.out_mode })));
             setSelected(matched.map((r) => r.__id));
             if (missing.length) {
               toast.warning(
