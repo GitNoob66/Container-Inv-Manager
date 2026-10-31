@@ -95,7 +95,7 @@ test('validation flags wagon-count mismatch and bad container numbers', () => {
 });
 
 const sample = '/tmp/rr/E-RR_GIMB_to_MILK_291026.txt';
-test.if(existsSync(sample))('GIMB→MILK RR: 96 containers, TAC+ENHC reconcile to ₹28,15,831', () => {
+test.runIf(existsSync(sample))('GIMB→MILK RR: 96 containers, TAC+ENHC reconcile to ₹28,15,831', () => {
   const rr = parseRRText(readFileSync(sample, 'utf8')); const a = auditRR(rr);
   expect(rr.containers.length).toBe(96); expect(a.extras).toBe(195480); expect(a.total).toBe(2815831);
 });
