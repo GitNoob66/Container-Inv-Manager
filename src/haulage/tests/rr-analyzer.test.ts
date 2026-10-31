@@ -1,4 +1,4 @@
-import { expect, test } from 'bun:test';
+import { expect, test } from 'vitest';
 import { auditRR, containerFreight, parseRRText } from '../lib/rr-analyzer';
 
 test('40ft loaded rates follow the 2018 circular at 1106 km', () => {

@@ -1,4 +1,4 @@
-import { describe,it,expect } from 'bun:test';
+import { describe,it,expect } from 'vitest';
 import { blankConfig,makePlan,groupPlan,parsePendencyRows,normalizedDate,type PendingContainer } from '../lib/backload';
 import { parseWagonText,wagonConfig,orderWagons } from '../lib/wagon-details';
 const c=(number:string,size:20|40=20,date='2026-10-07',smtp='100'):PendingContainer=>({id:number,number,size,smtp,smtpDate:date,terminal:'CT3',line:'CMA',gross:12,dwell:3,source:'FOIS'});
