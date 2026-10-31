@@ -10,7 +10,7 @@ import { logAction } from "@/lib/session";
 import { InventoryOverview } from "@/features/overview";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/inventory")({
   head: () => ({
     meta: [
       { title: "Container Yard Manager — Depot Inventory" },
