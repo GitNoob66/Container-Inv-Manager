@@ -173,7 +173,7 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
   };
 
   const openWagons = availableWagons(wagons.wagons, [...wagons.loads, ...rowLoads(rows)], wagons.doubleStack);
-  const columns = outwardColumns(rows, { wagons: openWagons });
+  const columns = outwardColumns(rows, { wagons: openWagons, mode: bulk.out_mode });
   const anyRail = bulk.out_mode === "Rail" || rows.some((r) => r.out_mode === "Rail");
   const listId = `out-trucks-${centre.id}`;
 

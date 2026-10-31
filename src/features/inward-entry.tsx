@@ -226,7 +226,7 @@ export function InwardEntry({ centre }: { centre: Centre }) {
               </p>
             </div>
             <EditableGrid
-              columns={inwardColumns(rows, { wagons: openWagons })}
+              columns={inwardColumns(rows, { wagons: openWagons, mode: flexiMode })}
               rows={rows}
               selectable
               selected={selected}
