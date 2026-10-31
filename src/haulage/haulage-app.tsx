@@ -1,4 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
+import { LayoutGrid } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Activity, ArrowDownToLine, ArrowRight, Check, Clock3, Container as ContainerIcon, FileSpreadsheet, FolderClock, Gauge, Layers3, Moon, Plus, RotateCcw, Search, Settings2, Sun, TrainFront, Trash2, UploadCloud, X } from 'lucide-react';
 import { Button } from '@/haulage/ui/button';
@@ -14,26 +15,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { baseHaulage, CATEGORY_ORDER, CATEGORIES, charges, deleteTrip, exportHaulage, exportTrain, GSTIN, listTrips, newTrip, parseRailFile, payable, rateFor, teusFor, tripCounts, saveTrip, teu, type Trip } from '@/haulage/lib/rail';
 import { slab } from '@/haulage/lib/rates';
 
-export const Route = createFileRoute('/')({
-  head: () => ({ meta: [
-    { title: 'CWC Summary and Haulage Generator' },
-    { name: 'description', content: 'Offline freight train summaries, railway haulage calculations, Excel reports and local rake history.' },
-    { property: 'og:title', content: 'CWC Summary and Haulage Generator' },
-    { property: 'og:description', content: 'Offline freight train summaries, railway haulage calculations, Excel reports and local rake history.' },
-    { property: 'og:type', content: 'website' },
-    { name: 'twitter:card', content: 'summary_large_image' },
-  ] }),
-  component: Index,
-});
 const money = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
 const dateLabel = (value: string) => new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 const dateInput = (value?: string) => (value ? new Date(value) : new Date()).toISOString().slice(0, 10);
 
-export function Index() {
+export function HaulageApp() {
   const [active, setActive] = useState<'overview' | 'history' | 'release' | 'pendency' | 'wagons' | 'rr'>('overview');
   const [backloadConfig,setBackloadConfig] = useState(blankConfig);
   const [pendencyPool,setPendencyPool] = useState<PendingContainer[]>([]);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => (typeof document !== 'undefined' && document.documentElement.classList.contains('dark') ? 'dark' : 'light'));
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [systemMotion, setSystemMotion] = useState(false);
@@ -65,7 +55,8 @@ export function Index() {
   const [underframeEnabled, setUnderframeEnabled] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => { void listTrips().then(setHistory).catch(() => setNotice('Local history is unavailable in this browser.')); }, []);
-  useEffect(() => { document.documentElement.classList.toggle('dark', theme === 'dark'); return () => document.documentElement.classList.remove('dark'); }, [theme]);
+  useEffect(() => { document.documentElement.classList.toggle('dark', theme === 'dark'); try { localStorage.setItem('theme', theme); } catch { /* session only */ } }, [theme]);
+  useEffect(() => { document.documentElement.classList.add('haulage-theme'); return () => document.documentElement.classList.remove('haulage-theme'); }, []);
   const notify = (message: string) => { setNotice(message); window.setTimeout(() => setNotice(''), 5500); };
   const importFile = async (file?: File) => {
     if (!file) return;
@@ -105,7 +96,7 @@ export function Index() {
     </aside>
 
     <main className="min-w-0">
-      <header className="flex h-[72px] items-center justify-between border-b border-border px-6 md:px-9"><div className="flex items-center gap-2 text-xs text-muted-foreground"><span>Workspace</span><ArrowRight size={12}/><span className="font-semibold text-foreground">{active === 'overview' ? 'Overview' : active === 'release' ? 'Release Maker' : active === 'pendency' ? 'Pendency Analyzer' : active === 'wagons' ? 'Wagon Details Maker' : active === 'rr' ? 'RR Analyzer' : 'Rake history'}</span></div><div className="flex items-center gap-3"><Button variant="ghost" size="icon" className="md:hidden" onClick={() => setActive(active === 'overview' ? 'history' : active === 'history' ? 'release' : active === 'release' ? 'pendency' : active === 'pendency' ? 'wagons' : active === 'wagons' ? 'rr' : 'overview')} aria-label={active === 'overview' ? 'Open rake history' : 'Open overview'} title={active === 'overview' ? 'Rake history' : 'Overview'}>{active === 'overview' ? <FolderClock size={18}/> : <Gauge size={18}/>}</Button><span className="hidden items-center gap-1.5 text-xs font-semibold text-success sm:flex"><span className="size-1.5 rounded-full bg-success"/> All systems local</span><span className="mx-1 hidden h-5 w-px bg-border sm:block"/><Button variant="ghost" size="icon" aria-label="Toggle dark mode" title="Toggle dark mode" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>{theme === 'light' ? <Moon size={18}/> : <Sun size={18}/>}</Button><Button variant="ghost" size="icon" aria-label="Open settings" title="Settings" onClick={() => setSettingsOpen(true)}><Settings2 size={18}/></Button><div className="flex size-8 items-center justify-center rounded-full bg-avatar text-xs font-bold text-primary">RH</div></div></header>
+      <header className="flex h-[72px] items-center justify-between border-b border-border px-6 md:px-9"><div className="flex items-center gap-2 text-xs text-muted-foreground"><span>Workspace</span><ArrowRight size={12}/><span className="font-semibold text-foreground">{active === 'overview' ? 'Overview' : active === 'release' ? 'Release Maker' : active === 'pendency' ? 'Pendency Analyzer' : active === 'wagons' ? 'Wagon Details Maker' : active === 'rr' ? 'RR Analyzer' : 'Rake history'}</span></div><div className="flex items-center gap-3"><Button variant="ghost" size="icon" className="md:hidden" onClick={() => setActive(active === 'overview' ? 'history' : active === 'history' ? 'release' : active === 'release' ? 'pendency' : active === 'pendency' ? 'wagons' : active === 'wagons' ? 'rr' : 'overview')} aria-label={active === 'overview' ? 'Open rake history' : 'Open overview'} title={active === 'overview' ? 'Rake history' : 'Overview'}>{active === 'overview' ? <FolderClock size={18}/> : <Gauge size={18}/>}</Button><Button asChild variant="outline" size="sm" className="gap-2"><Link to="/"><LayoutGrid size={16}/> Switch module</Link></Button><span className="hidden items-center gap-1.5 text-xs font-semibold text-success sm:flex"><span className="size-1.5 rounded-full bg-success"/> All systems local</span><span className="mx-1 hidden h-5 w-px bg-border sm:block"/><Button variant="ghost" size="icon" aria-label="Toggle dark mode" title="Toggle dark mode" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>{theme === 'light' ? <Moon size={18}/> : <Sun size={18}/>}</Button><Button variant="ghost" size="icon" aria-label="Open settings" title="Settings" onClick={() => setSettingsOpen(true)}><Settings2 size={18}/></Button><div className="flex size-8 items-center justify-center rounded-full bg-avatar text-xs font-bold text-primary">RH</div></div></header>
       <div ref={viewRef} className="workspace-view mx-auto max-w-[1580px] px-6 py-7 md:px-9 md:py-8">
         {active === 'overview' ? <>
           <div className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><div className="mb-2 flex items-center gap-2 text-xs font-semibold text-muted-foreground"><Activity size={14} className="text-highlight"/> OPERATIONS DESK <span className="text-border">/</span> TRAIN SUMMARY</div><h1 className="text-[25px] font-bold leading-tight tracking-normal md:text-[29px]">CWC Summary and Haulage Generator</h1></div><div className="flex gap-2"><Button variant="outline" onClick={reset} title="Reset current rake" aria-label="Reset current rake"><RotateCcw size={16}/> Reset</Button><Button onClick={() => inputRef.current?.click()} className="h-10 gap-2 px-4 shadow-sm"><Plus size={17}/> Import new report</Button></div></div>
