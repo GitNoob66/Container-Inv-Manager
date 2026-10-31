@@ -7,6 +7,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  useLocation,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
@@ -152,6 +153,9 @@ function RootComponent() {
 /** Every screen needs a login first: Admin or a centre user with that centre's password. */
 function AuthGate({ children }: { children: ReactNode }) {
   const { role, ready } = useAuth();
+  const pathname = useLocation({ select: (l) => l.pathname });
+  // module picker and the Haulage tool open without a password
+  if (pathname === "/" || pathname.startsWith("/haulage")) return <>{children}</>;
   if (!ready) return <div className="min-h-screen bg-background" />;
   if (!role) return <LoginScreen />;
   return <>{children}</>;

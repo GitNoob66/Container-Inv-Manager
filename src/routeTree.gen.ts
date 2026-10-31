@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CentresRouteImport } from './routes/centres'
+import { Route as HaulageRouteImport } from './routes/haulage'
+import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as RakesRouteImport } from './routes/rakes'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -25,6 +27,16 @@ const IndexRoute = IndexRouteImport.update({
 const CentresRoute = CentresRouteImport.update({
   id: '/centres',
   path: '/centres',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HaulageRoute = HaulageRouteImport.update({
+  id: '/haulage',
+  path: '/haulage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InventoryRoute = InventoryRouteImport.update({
+  id: '/inventory',
+  path: '/inventory',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RakesRoute = RakesRouteImport.update({
@@ -56,6 +68,8 @@ const CentreCentreIdSectionRoute = CentreCentreIdSectionRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/centres': typeof CentresRoute
+  '/haulage': typeof HaulageRoute
+  '/inventory': typeof InventoryRoute
   '/rakes': typeof RakesRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
@@ -65,6 +79,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/centres': typeof CentresRoute
+  '/haulage': typeof HaulageRoute
+  '/inventory': typeof InventoryRoute
   '/rakes': typeof RakesRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
@@ -75,6 +91,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/centres': typeof CentresRoute
+  '/haulage': typeof HaulageRoute
+  '/inventory': typeof InventoryRoute
   '/rakes': typeof RakesRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
@@ -86,6 +104,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/centres'
+    | '/haulage'
+    | '/inventory'
     | '/rakes'
     | '/reports'
     | '/settings'
@@ -95,6 +115,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/centres'
+    | '/haulage'
+    | '/inventory'
     | '/rakes'
     | '/reports'
     | '/settings'
@@ -104,6 +126,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/centres'
+    | '/haulage'
+    | '/inventory'
     | '/rakes'
     | '/reports'
     | '/settings'
@@ -114,6 +138,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CentresRoute: typeof CentresRoute
+  HaulageRoute: typeof HaulageRoute
+  InventoryRoute: typeof InventoryRoute
   RakesRoute: typeof RakesRoute
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
@@ -135,6 +161,20 @@ declare module '@tanstack/react-router' {
       path: '/centres'
       fullPath: '/centres'
       preLoaderRoute: typeof CentresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/haulage': {
+      id: '/haulage'
+      path: '/haulage'
+      fullPath: '/haulage'
+      preLoaderRoute: typeof HaulageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inventory': {
+      id: '/inventory'
+      path: '/inventory'
+      fullPath: '/inventory'
+      preLoaderRoute: typeof InventoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rakes': {
@@ -178,6 +218,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CentresRoute: CentresRoute,
+  HaulageRoute: HaulageRoute,
+  InventoryRoute: InventoryRoute,
   RakesRoute: RakesRoute,
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,

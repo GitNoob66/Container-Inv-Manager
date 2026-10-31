@@ -66,7 +66,8 @@ export function customGridColumns(custom: CustomColumn[]): GridColumn[] {
     }));
 }
 
-type WagonOptions = { wagons: string[] };
+/** `mode` = the mode chosen above the grid; when given it decides which transport columns show. */
+type WagonOptions = { wagons: string[]; mode?: string };
 
 export function useFieldOptions(centreId: string) {
   const { data: rakes = [] } = useQuery({ queryKey: ["rakes"], queryFn: api.rakes });
@@ -96,7 +97,8 @@ export function useFieldOptions(centreId: string) {
 
   /** Columns for inward / inventory grids; conditional columns appear when any row needs them. */
   const inwardColumns = (rows: Record<string, string>[], w: WagonOptions = { wagons: [] }): GridColumn[] => {
-    const anyRail = rows.some((r) => r.mode === "Rail");
+    const anyRail = w.mode ? w.mode === "Rail" : rows.some((r) => r.mode === "Rail");
+    const anyRoad = w.mode ? w.mode === "Road" : rows.some((r) => r.mode === "Road");
     return finish([
       { key: "container_no", label: "Container No", width: "10rem" },
       { key: "mode", label: "Mode", kind: "select", options: MODES },
@@ -104,7 +106,7 @@ export function useFieldOptions(centreId: string) {
       { key: "rake_name", label: "Rake", kind: "select", options: rakeNames, show: anyRail },
       { key: "wagon_no", label: "Wagon Number", kind: "suggest", options: w.wagons, show: anyRail },
       { key: "stack", label: "Stack", kind: "select", options: STACKS, show: anyRail },
-      { key: "truck_no", label: "Truck Number", kind: "suggest", options: truckNos, show: rows.some((r) => r.mode === "Road") },
+      { key: "truck_no", label: "Truck Number", kind: "suggest", options: truckNos, show: anyRoad },
       { key: "size", label: "Size", kind: "select", options: sizes.map((s) => s.label) },
       { key: "ctr_type", label: "Type", kind: "select", options: types.map((t) => t.label) },
       { key: "dry_subtype", label: "Sub Type", kind: "select", options: subtypes },
@@ -126,7 +128,8 @@ export function useFieldOptions(centreId: string) {
   };
 
   const outwardColumns = (rows: Record<string, string>[], w: WagonOptions = { wagons: [] }): GridColumn[] => {
-    const anyRail = rows.some((r) => r.out_mode === "Rail");
+    const anyRail = w.mode ? w.mode === "Rail" : rows.some((r) => r.out_mode === "Rail");
+    const anyRoad = w.mode ? w.mode === "Road" : rows.some((r) => r.out_mode === "Road");
     return finish([
       { key: "container_no", label: "Container No", width: "10rem", readOnly: true },
       { key: "out_mode", label: "Out Mode", kind: "select", options: MODES },
@@ -134,7 +137,7 @@ export function useFieldOptions(centreId: string) {
       { key: "out_rake_name", label: "Rake", kind: "select", options: rakeNames, show: anyRail },
       { key: "out_wagon_no", label: "Wagon Number", kind: "suggest", options: w.wagons, show: anyRail },
       { key: "out_stack", label: "Stack", kind: "select", options: STACKS, show: anyRail },
-      { key: "out_truck_no", label: "Truck Number", kind: "suggest", options: truckNos, show: rows.some((r) => r.out_mode === "Road") },
+      { key: "out_truck_no", label: "Truck Number", kind: "suggest", options: truckNos, show: anyRoad },
       { key: "out_date", label: "Out Date", kind: "date" },
       { key: "out_time", label: "Out Time", kind: "time" },
       { key: "destination", label: "Destination" },

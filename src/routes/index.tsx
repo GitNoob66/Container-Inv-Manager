@@ -1,207 +1,83 @@
-import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import { BarChart3, Search, X } from "lucide-react";
-import { useMemo, useState } from "react";
-import { AppShell } from "@/components/app-shell";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { api, teuFor, type Container } from "@/lib/api";
-import { logAction } from "@/lib/session";
-import { InventoryOverview } from "@/features/overview";
-import { cn } from "@/lib/utils";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight, Container as ContainerIcon, Lock, TrainFront } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Container Yard Manager — Depot Inventory" },
+      { title: "CWC Operations Suite — Choose a module" },
       {
         name: "description",
-        content:
-          "Track shipping container inventory across depots: inward and outward movements, TEU overview, rake management and Excel reports.",
+        content: "Open the Container Inventory Manager or the CWC Summary and Haulage Generator.",
       },
-      { property: "og:title", content: "Container Yard Manager — Depot Inventory" },
+      { property: "og:title", content: "CWC Operations Suite — Choose a module" },
       {
         property: "og:description",
-        content: "Depot container inventory, TEU overview, rake management and Excel reports.",
+        content: "Container inventory across centres, plus train summaries and haulage calculations, in one app.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: Dashboard,
+  component: ModuleHub,
 });
 
-function Dashboard() {
-  const [term, setTerm] = useState("");
-  const [query, setQuery] = useState("");
-  const [showOverview, setShowOverview] = useState(true);
-  const [location, setLocation] = useState("");
+const MODULES = [
+  {
+    to: "/inventory" as const,
+    title: "Container Inventory Manager",
+    text: "Inward and outward entries, inventory, yard positions, rakes, vehicles and reports for all 12 centres.",
+    icon: ContainerIcon,
+    login: true,
+  },
+  {
+    to: "/haulage" as const,
+    title: "Summary & Haulage Generator",
+    text: "Train summaries, railway haulage, release memos, pendency, wagon details and RR analysis.",
+    icon: TrainFront,
+    login: false,
+  },
+];
 
-  const { data: centres = [] } = useQuery({ queryKey: ["centres"], queryFn: api.centres });
-  const { data: containers = [] } = useQuery({
-    queryKey: ["containers", "all"],
-    queryFn: api.allContainers,
-  });
-  const { data: results = [] } = useQuery({
-    queryKey: ["search", query],
-    queryFn: () => api.searchContainers(query),
-    enabled: query.length >= 3,
-  });
-
-  const nameById = Object.fromEntries(centres.map((c) => [c.id, c.name]));
-  const inStock = useMemo(() => containers.filter((c) => !c.dispatched), [containers]);
-
-  const bySize = useMemo(() => {
-    const map = new Map<string, { count: number; teu: number }>();
-    for (const c of inStock) {
-      const k = c.size ?? "Unknown";
-      const cur = map.get(k) ?? { count: 0, teu: 0 };
-      map.set(k, { count: cur.count + 1, teu: cur.teu + teuFor(c.size) });
-    }
-    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  }, [inStock]);
-
-  const totalTeu = bySize.reduce((s, [, v]) => s + v.teu, 0);
-
-  const runSearch = () => {
-    setQuery(term.trim());
-    if (term.trim().length >= 3) logAction(null, null, "Container searched", term.trim().toUpperCase());
-  };
-
+function ModuleHub() {
   return (
-    <AppShell title="Dashboard">
-      <div className="space-y-6">
-        <section className="panel p-5">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative flex-1 min-w-60">
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={term}
-                placeholder="Search a container number…"
-                className="num pl-9 pr-9 uppercase"
-                onChange={(e) => setTerm(e.target.value.toUpperCase())}
-                onKeyDown={(e) => e.key === "Enter" && runSearch()}
-              />
-              {term ? (
-                <button
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
-                  aria-label="Clear search"
-                  onClick={() => {
-                    setTerm("");
-                    setQuery("");
-                  }}
-                >
-                  <X className="size-4" />
-                </button>
-              ) : null}
-            </div>
-            <Button onClick={runSearch}>
-              <Search className="mr-2 size-4" /> Search
-            </Button>
-          </div>
-
-          {query.length >= 3 ? (
-            <div className="mt-4 overflow-x-auto">
-              {results.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No container matches “{query}”.</p>
-              ) : (
-                <SearchTable rows={results} nameById={nameById} />
-              )}
-            </div>
-          ) : null}
-        </section>
-
-        <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Button variant="secondary" size="sm" onClick={() => setShowOverview((s) => !s)}>
-              <BarChart3 className="mr-2 size-4" /> {showOverview ? "Hide" : "Show"} Overview
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              {location ? nameById[location] : "All centres"} · {location ? inStock.filter((c) => c.centre_id === location).length : inStock.length} containers in stock
-            </span>
-            {location ? (
-              <Button size="sm" variant="ghost" onClick={() => setLocation("")}>
-                <X className="mr-1 size-3" /> Show all centres
-              </Button>
-            ) : null}
-          </div>
-
-          {showOverview ? <InventoryOverview centreId={location || undefined} /> : null}
-        </section>
-
-        <section className="space-y-3">
-          <h2 className="font-display text-base font-semibold">Centres</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {centres.map((c) => {
-              const rows = inStock.filter((x) => x.centre_id === c.id);
-              const teu = rows.reduce((s, r) => s + teuFor(r.size), 0);
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => {
-                    setLocation(c.id);
-                    setShowOverview(true);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
-                  className={cn(
-                    "panel p-4 text-left transition-shadow hover:shadow-[var(--shadow-float)]",
-                    location === c.id && "border-accent ring-1 ring-accent",
-                  )}
-                >
-                  <div className="font-medium">{c.name}</div>
-                  <div className="num mt-2 text-xl font-semibold">{rows.length}</div>
-                  <div className="text-xs text-muted-foreground">containers · {teu} TEU</div>
-                </button>
-              );
-            })}
-          </div>
-        </section>
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background px-5 py-12">
+      <div className="absolute right-4 top-4 rounded-md bg-primary">
+        <ThemeToggle />
       </div>
-    </AppShell>
-  );
-}
-
-function SearchTable({
-  rows,
-  nameById,
-}: {
-  rows: Container[];
-  nameById: Record<string, string>;
-}) {
-  return (
-    <table className="w-full text-sm">
-      <thead className="bg-secondary text-xs uppercase tracking-wide text-secondary-foreground">
-        <tr>
-          {["Container", "Centre", "Size", "Type", "Status", "Yard", "In Date", "State"].map((h) => (
-            <th key={h} className="whitespace-nowrap px-3 py-2 text-left font-semibold">
-              {h}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((r) => (
-          <tr key={r.id} className="border-t border-border">
-            <td className="num px-3 py-2 font-medium">{r.container_no}</td>
-            <td className="px-3 py-2">{nameById[r.centre_id] ?? "—"}</td>
-            <td className="px-3 py-2">{r.size ?? "—"}</td>
-            <td className="px-3 py-2">
-              {[r.ctr_type, r.dry_subtype].filter(Boolean).join(" ") || "—"}
-            </td>
-            <td className="px-3 py-2">{r.status ?? "—"}</td>
-            <td className="px-3 py-2">{r.yard_position ?? "—"}</td>
-            <td className="num px-3 py-2">
-              {[r.in_date, r.in_time].filter(Boolean).join(" ") || "—"}
-            </td>
-            <td className="px-3 py-2">
-              {r.dispatched ? (
-                <span className="rounded bg-muted px-2 py-0.5 text-xs">Dispatched</span>
-              ) : (
-                <span className="rounded bg-success/15 px-2 py-0.5 text-xs text-success">In yard</span>
-              )}
-            </td>
-          </tr>
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">CWC Operations Suite</p>
+      <h1 className="mt-2 text-center font-display text-3xl font-semibold text-foreground">Which module do you want to open?</h1>
+      <div className="mt-10 grid w-full max-w-3xl gap-5 sm:grid-cols-2">
+        {MODULES.map((m) => (
+          <Link
+            key={m.to}
+            to={m.to}
+            className="panel group flex flex-col gap-4 p-6 transition-all hover:-translate-y-0.5 hover:border-primary focus-visible:outline-2 focus-visible:outline-ring"
+          >
+            <div className="flex size-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <m.icon className="size-6" />
+            </div>
+            <div>
+              <h2 className="font-display text-lg font-semibold text-foreground">{m.title}</h2>
+              <p className="mt-1.5 text-sm leading-6 text-muted-foreground">{m.text}</p>
+            </div>
+            <div className="mt-auto flex items-center justify-between text-sm font-medium text-primary">
+              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                {m.login ? (
+                  <>
+                    <Lock className="size-3.5" /> Sign-in required
+                  </>
+                ) : (
+                  "Opens directly"
+                )}
+              </span>
+              <span className="flex items-center gap-1">
+                Open <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+              </span>
+            </div>
+          </Link>
         ))}
-      </tbody>
-    </table>
+      </div>
+    </div>
   );
 }

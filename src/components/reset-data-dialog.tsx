@@ -34,7 +34,7 @@ export function ResetDataDialog({ role, centreName }: { role: AppRole; centreNam
       queryClient.clear();
       setOpen(false);
       toast.success("Data has been reset.");
-      void navigate({ to: "/" });
+      void navigate({ to: "/inventory" });
     } catch (e) {
       toast.error((e as Error).message);
     } finally {

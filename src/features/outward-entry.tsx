@@ -1,3 +1,4 @@
+import { SuggestInput } from "@/components/suggest-input";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -173,9 +174,8 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
   };
 
   const openWagons = availableWagons(wagons.wagons, [...wagons.loads, ...rowLoads(rows)], wagons.doubleStack);
-  const columns = outwardColumns(rows, { wagons: openWagons });
+  const columns = outwardColumns(rows, { wagons: openWagons, mode: bulk.out_mode });
   const anyRail = bulk.out_mode === "Rail" || rows.some((r) => r.out_mode === "Rail");
-  const listId = `out-trucks-${centre.id}`;
 
   const grid = (empty: string) => (
     <EditableGrid
@@ -223,17 +223,12 @@ export function OutwardEntry({ centre }: { centre: Centre }) {
           </BulkField>
           {bulk.out_mode === "Road" && !cfg.hidden("truck_no") ? (
             <BulkField label={cfg.label("truck_no", "Truck Number")}>
-              <Input
-                list={listId}
-                className="num uppercase"
+              <SuggestInput
+                className="num"
                 value={bulk.out_truck_no}
-                onChange={(e) => updateBulk({ out_truck_no: e.target.value.toUpperCase() })}
+                options={truckNos}
+                onChange={(v) => updateBulk({ out_truck_no: v })}
               />
-              <datalist id={listId}>
-                {truckNos.map((t) => (
-                  <option key={t} value={t} />
-                ))}
-              </datalist>
             </BulkField>
           ) : null}
           {bulk.out_mode === "Rail" ? (

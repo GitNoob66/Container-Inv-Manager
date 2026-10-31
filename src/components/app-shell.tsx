@@ -1,3 +1,4 @@
+import { LayoutGrid } from "lucide-react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -150,7 +151,7 @@ export function AppShell({
   return (
     <div className="flex min-h-screen bg-background">
       <aside className="hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar p-4 md:flex">
-        <Link to="/" className="mb-6 flex items-center gap-2 px-1">
+        <Link to="/inventory" className="mb-6 flex items-center gap-2 px-1">
           <div className="flex size-9 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
             <ContainerIcon className="size-5" />
           </div>
@@ -164,7 +165,7 @@ export function AppShell({
 
         <SignedInAs />
 
-        <Link to="/" className={navClass(pathname === "/")}>
+        <Link to="/inventory" className={navClass(pathname === "/inventory")}>
           <Warehouse className="size-4" />
           Dashboard
         </Link>
@@ -233,13 +234,20 @@ export function AppShell({
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-card px-5 py-3">
           <h1 className="font-display text-lg font-semibold">{title}</h1>
-          <div className="flex items-center gap-2">{actions}</div>
+          <div className="flex items-center gap-2">
+            {actions}
+            <Button asChild size="sm" variant="outline">
+              <Link to="/">
+                <LayoutGrid className="mr-1.5 size-4" /> Switch module
+              </Link>
+            </Button>
+          </div>
         </header>
         <main className="min-w-0 flex-1 p-5">{children}</main>
         <div className="border-t border-border bg-card p-3 md:hidden">
           <div className="flex flex-wrap gap-2">
             <Button asChild size="sm" variant="secondary">
-              <Link to="/">Dashboard</Link>
+              <Link to="/inventory">Dashboard</Link>
             </Button>
             {isMaster ? (
               <Button asChild size="sm" variant="secondary">
