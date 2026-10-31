@@ -19,3 +19,8 @@
 - Per-centre columns live in `custom_columns`: `builtin=true` rows rename/hide a standard field, others are extra fields stored in `containers.custom_fields` (grid keys prefixed `cf_`).
 - Wagon lists for rail movements are session-only memory (`src/lib/wagon-session.ts`); loading rules live in `src/lib/wagons.ts` with tests.
 - The packaged Windows app stores data in a `data` folder beside the EXE (`app.setPath("userData")` in electron/main.cjs) so the extracted folder is portable; ship it as a ZIP, not a temp-extracting SFX.
+
+## Modules
+- `/` is a module picker; Container Inventory lives under `/inventory` (plus its existing routes) behind the login gate, while the Haulage & Train Summary module (`src/haulage/`, route `/haulage`) skips login, so the two tools share one app and build.
+- Haulage styling is scoped by the `haulage-theme` class on `<html>` (added while `/haulage` is mounted) so its tokens never change the inventory screens, including portalled dialogs.
+- Grid transport columns follow the mode chosen above the grid (`mode` option to `inwardColumns`/`outwardColumns`) rather than row values, so switching Road/Rail immediately swaps truck vs. rake/wagon columns.

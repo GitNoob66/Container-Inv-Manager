@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog } = require("electron");
+const { app, BrowserWindow, dialog, ipcMain, clipboard } = require("electron");
 const path = require("path");
 
 // Keep every record in a "data" folder beside the EXE so the whole extracted
@@ -16,10 +16,20 @@ function createWindow() {
     title: "Container Yard Manager",
     autoHideMenuBar: true,
     webPreferences: {
+      preload: path.join(__dirname, "preload.cjs"),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
     },
+  });
+
+  // Haulage module: copy release memos to the clipboard as rich text
+  ipcMain.removeHandler("memo:copy");
+  ipcMain.handle("memo:copy", (event, value) => {
+    if (event.sender !== window.webContents || typeof value?.html !== "string" || typeof value?.text !== "string" || value.html.length > 10000000 || value.text.length > 1000000) {
+      throw new Error("Invalid memo clipboard request.");
+    }
+    clipboard.write({ html: value.html, text: value.text });
   });
 
   const offlineEntry = path.join(__dirname, "..", "offline-dist", "offline-index.html");
