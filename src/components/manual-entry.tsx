@@ -104,7 +104,6 @@ export function ManualEntryFields({
   const stack = isOut ? draft.out_stack : draft.stack;
   const truckNo = isOut ? draft.out_truck_no : draft.truck_no;
   const selectedType = types.find((t) => t.label === draft.ctr_type);
-  const listId = `trucks-${centreId}`;
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
