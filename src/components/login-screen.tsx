@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { Container as ContainerIcon, LogIn } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Container as ContainerIcon, LayoutGrid, LogIn } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,13 @@ export function LoginScreen() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="absolute left-4 top-4">
+        <Button asChild size="sm" variant="outline">
+          <Link to="/">
+            <LayoutGrid className="mr-1.5 size-4" /> Switch module
+          </Link>
+        </Button>
+      </div>
       <div className="absolute right-4 top-4">
         <ThemeToggle />
       </div>
