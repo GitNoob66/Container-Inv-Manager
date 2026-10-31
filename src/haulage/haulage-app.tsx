@@ -55,7 +55,7 @@ export function HaulageApp() {
   const [underframeEnabled, setUnderframeEnabled] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => { void listTrips().then(setHistory).catch(() => setNotice('Local history is unavailable in this browser.')); }, []);
-  useEffect(() => { document.documentElement.classList.toggle('dark', theme === 'dark'); try { localStorage.setItem('theme', theme); } catch { /* session only */ } }, [theme]);
+  useEffect(() => { document.documentElement.classList.toggle('dark', theme === 'dark'); try { localStorage.setItem('cim.theme', theme); } catch { /* session only */ } }, [theme]);
   useEffect(() => { document.documentElement.classList.add('haulage-theme'); return () => document.documentElement.classList.remove('haulage-theme'); }, []);
   const notify = (message: string) => { setNotice(message); window.setTimeout(() => setNotice(''), 5500); };
   const importFile = async (file?: File) => {

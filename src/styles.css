@@ -180,3 +180,198 @@
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
+
+/* ===== Haulage & Train Summary module (active while html has .haulage-theme) ===== */
+@theme inline {
+  --color-highlight: var(--highlight);
+  --color-highlight-soft: var(--highlight-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-amber-soft: var(--amber-soft);
+  --color-amber-ink: var(--amber-ink);
+  --color-avatar: var(--avatar);
+  --color-nav-active: var(--nav-active);
+  --color-drop: var(--drop);
+  --color-table-head: var(--table-head);
+  --color-total: var(--total);
+  --color-total-foreground: var(--total-foreground);
+  --color-total-muted: var(--total-muted);
+  --color-total-line: var(--total-line);
+  --color-banner-foreground: var(--banner-foreground);
+  --color-overlay: var(--overlay);
+}
+:root.haulage-theme {
+  --radius: 0.375rem;
+  --background: oklch(0.977 0.007 220);
+  --foreground: oklch(0.24 0.04 230);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.24 0.04 230);
+  --sidebar: oklch(0.992 0.003 220);
+  --sidebar-foreground: oklch(0.24 0.04 230);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.24 0.04 230);
+  --primary: oklch(0.29 0.067 232);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.94 0.016 222);
+  --secondary-foreground: oklch(0.29 0.067 232);
+  --muted: oklch(0.955 0.008 220);
+  --muted-foreground: oklch(0.55 0.024 225);
+  --accent: oklch(0.94 0.016 222);
+  --accent-foreground: oklch(0.29 0.067 232);
+  --border: oklch(0.9 0.014 220);
+  --input: oklch(0.89 0.014 220);
+  --ring: oklch(0.57 0.12 215);
+  --highlight: oklch(0.55 0.118 214);
+  --highlight-soft: oklch(0.94 0.033 214);
+  --success: oklch(0.53 0.13 160);
+  --warning: oklch(0.62 0.15 70);
+  --success-soft: oklch(0.94 0.04 160);
+  --amber-soft: oklch(0.95 0.06 83);
+  --amber-ink: oklch(0.55 0.11 70);
+  --avatar: oklch(0.89 0.046 212);
+  --nav-active: oklch(0.93 0.03 219);
+  --drop: oklch(0.995 0.003 220);
+  --table-head: oklch(0.965 0.009 220);
+  --total: oklch(0.29 0.067 232);
+  --total-foreground: oklch(1 0 0);
+  --total-muted: oklch(0.82 0.025 220);
+  --total-line: oklch(0.44 0.06 230);
+  --banner-foreground: oklch(1 0 0);
+  --overlay: oklch(0.18 0.02 230 / 50%);
+}
+:root.haulage-theme.dark {
+  --background: oklch(0.17 0.025 230);
+  --foreground: oklch(0.95 0.008 220);
+  --card: oklch(0.22 0.027 230);
+  --card-foreground: oklch(0.95 0.008 220);
+  --sidebar: oklch(0.19 0.026 230);
+  --sidebar-foreground: oklch(0.95 0.008 220);
+  --popover: oklch(0.22 0.027 230);
+  --popover-foreground: oklch(0.95 0.008 220);
+  --primary: oklch(0.69 0.115 213);
+  --primary-foreground: oklch(0.16 0.03 230);
+  --secondary: oklch(0.3 0.027 230);
+  --secondary-foreground: oklch(0.95 0.008 220);
+  --muted: oklch(0.28 0.022 230);
+  --muted-foreground: oklch(0.7 0.019 220);
+  --accent: oklch(0.3 0.027 230);
+  --accent-foreground: oklch(0.95 0.008 220);
+  --border: oklch(0.36 0.02 225);
+  --input: oklch(0.39 0.02 225);
+  --ring: oklch(0.69 0.115 213);
+  --highlight: oklch(0.75 0.1 212);
+  --highlight-soft: oklch(0.29 0.04 218);
+  --success: oklch(0.73 0.11 160);
+  --warning: oklch(0.8 0.14 80);
+  --success-soft: oklch(0.28 0.05 160);
+  --amber-soft: oklch(0.32 0.05 80);
+  --amber-ink: oklch(0.8 0.1 80);
+  --avatar: oklch(0.34 0.04 220);
+  --nav-active: oklch(0.3 0.05 220);
+  --drop: oklch(0.2 0.025 230);
+  --table-head: oklch(0.27 0.025 230);
+  --total: oklch(0.28 0.05 232);
+  --total-foreground: oklch(1 0 0);
+  --total-muted: oklch(0.8 0.02 220);
+  --total-line: oklch(0.46 0.05 230);
+  --banner-foreground: oklch(1 0 0);
+  --overlay: oklch(0.08 0.01 230 / 70%);
+}
+.haulage-theme body { font-family: 'Segoe UI', 'Arial', sans-serif; }
+.app-shell { display: grid; grid-template-columns: 238px minmax(0, 1fr); }
+.workspace-grid { grid-template-columns: minmax(0, 1.18fr) minmax(320px, .82fr); }
+.banner-shade { background: linear-gradient(90deg, oklch(0.2 0.045 230 / 92%) 0%, oklch(0.21 0.04 230 / 72%) 43%, transparent 80%); }
+.metric-blue { color: oklch(0.53 0.13 230); background: oklch(0.93 0.03 230); }
+.metric-teal { color: oklch(0.48 0.12 170); background: oklch(0.93 0.04 170); }
+.metric-amber { color: oklch(0.57 0.12 76); background: oklch(0.95 0.05 76); }
+.metric-coral { color: oklch(0.57 0.15 30); background: oklch(0.95 0.045 30); }
+.dark .metric-icon { filter: brightness(.82); }
+.metric-card { animation: rise-in .4s ease-out both; }
+.metric-card:nth-child(2) { animation-delay: .05s; }.metric-card:nth-child(3) { animation-delay: .1s; }.metric-card:nth-child(4) { animation-delay: .15s; }
+@keyframes rise-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 1120px) { .workspace-grid { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 700px) { .app-shell { display: block; }.sidebar { border-right: 0; border-bottom: 1px solid var(--border); }.sidebar > div:first-child { padding: 16px 20px; }.sidebar > div:not(:first-child), .sidebar nav { display: none; } }
+@media (prefers-reduced-motion: reduce) { .metric-card { animation: none; } *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+
+/* Frosted workspace only: document canvases retain their reference styling. */
+:root.haulage-theme {
+  --background: oklch(0.984 0.003 247.858);
+  --foreground: oklch(0.24 0.035 265);
+  --card: oklch(1 0 0 / 75%);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.995 0.002 248 / 96%);
+  --popover-foreground: var(--foreground);
+  --sidebar: oklch(1 0 0 / 65%);
+  --primary: oklch(0.585 0.233 277.117);
+  --primary-foreground: oklch(1 0 0);
+  --muted: oklch(0.963 0.007 248 / 75%);
+  --muted-foreground: oklch(0.47 0.025 260);
+  --border: oklch(0.929 0.013 255.508 / 80%);
+  --input: oklch(0.86 0.02 260 / 85%);
+  --ring: var(--primary);
+  --highlight: oklch(0.49 0.21 277);
+  --highlight-soft: oklch(0.95 0.026 277);
+  --nav-active: oklch(0.94 0.029 277 / 90%);
+  --table-head: oklch(0.97 0.005 248 / 90%);
+  --drop: var(--card);
+  --total: oklch(0.39 0.16 277);
+  --total-line: oklch(0.59 0.16 277);
+  --total-muted: oklch(0.92 0.025 277);
+  --avatar: oklch(0.93 0.035 277);
+  --glass-shadow: 0 8px 28px oklch(0.25 0.03 265 / 5%), 0 1px 3px oklch(0.25 0.03 265 / 3%);
+  --glass-lift: 0 12px 32px oklch(0.4 0.15 277 / 10%);
+  --focus-glow: 0 0 0 4px oklch(0.585 0.233 277 / 15%);
+}
+:root.haulage-theme.dark {
+  --background: oklch(0.208 0.042 265.755);
+  --foreground: oklch(0.96 0.006 248);
+  --card: oklch(0.208 0.042 265.755 / 60%);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.25 0.037 265 / 96%);
+  --popover-foreground: var(--foreground);
+  --sidebar: oklch(0.19 0.035 265 / 70%);
+  --primary: oklch(0.72 0.16 277);
+  --primary-foreground: oklch(0.19 0.035 265);
+  --muted: oklch(0.29 0.03 265 / 70%);
+  --muted-foreground: oklch(0.77 0.02 260);
+  --border: oklch(0.8 0.035 260 / 18%);
+  --input: oklch(0.8 0.035 260 / 28%);
+  --ring: var(--primary);
+  --highlight: oklch(0.8 0.12 277);
+  --highlight-soft: oklch(0.36 0.07 277 / 70%);
+  --nav-active: oklch(0.36 0.08 277 / 70%);
+  --table-head: oklch(0.28 0.035 265 / 95%);
+  --drop: var(--card);
+  --total: oklch(0.33 0.12 277);
+  --total-muted: oklch(0.88 0.04 277);
+  --avatar: oklch(0.37 0.08 277);
+  --glass-shadow: 0 8px 28px oklch(0.1 0.015 265 / 20%);
+  --glass-lift: 0 12px 32px oklch(0.6 0.16 277 / 13%);
+  --focus-glow: 0 0 0 4px oklch(0.72 0.16 277 / 18%);
+}
+.haulage-theme body { font-family: Inter, system-ui, 'Segoe UI', sans-serif; font-variant-numeric: tabular-nums; }
+.memo-paper { font-variant-numeric: normal; }
+.app-settings { border-radius: 1.5rem; }
+:root.haulage-theme.dark { color-scheme: dark; }
+.app-shell { background: var(--background); }
+.app-shell .sidebar, .app-shell main > header { backdrop-filter: blur(24px); background: var(--sidebar); }
+.app-shell main > header { position: relative; z-index: 10; }
+.workspace-view { will-change: transform, opacity; }
+.workspace-view .bg-card:not(.memo-paper *) { backdrop-filter: blur(24px); box-shadow: var(--glass-shadow); border-radius: 1rem; }
+.workspace-view .metric-card { border-radius: 1.5rem; padding: 1.25rem; }
+.workspace-view .metric-card:hover { box-shadow: var(--glass-lift); }
+.app-shell .app-button, .app-settings .app-button { transition: transform 220ms cubic-bezier(.22,1,.36,1), filter 180ms, box-shadow 220ms, background-color 180ms; }
+.app-shell .app-button:hover:not(:disabled), .app-settings .app-button:hover:not(:disabled) { filter: brightness(1.04); box-shadow: var(--glass-lift); }
+.app-shell .app-button:active:not(:disabled), .app-settings .app-button:active:not(:disabled) { scale: .97; }
+.app-shell input:not(.memo-paper *), .app-shell select:not(.memo-paper *) { border-radius: .625rem; transition: border-color 180ms, box-shadow 220ms; }
+.app-shell input:focus-visible:not(.memo-paper *), .app-shell select:focus-visible:not(.memo-paper *) { border-color: var(--ring); box-shadow: var(--focus-glow); outline: none; }
+.workspace-view tbody tr:not(.memo-paper *), .workspace-view .metric-card { animation: glass-enter 400ms cubic-bezier(.22,1,.36,1) both; }
+.workspace-view tbody tr:nth-child(2), .metric-card:nth-child(2) { animation-delay: 50ms; }
+.workspace-view tbody tr:nth-child(3), .metric-card:nth-child(3) { animation-delay: 100ms; }
+.workspace-view tbody tr:nth-child(4), .metric-card:nth-child(4) { animation-delay: 150ms; }
+.workspace-view tbody tr:nth-child(5), .metric-card:nth-child(5) { animation-delay: 200ms; }
+.workspace-view tbody tr:nth-child(6) { animation-delay: 250ms; }
+@keyframes glass-enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.reduce-motion *, .reduce-motion *::before, .reduce-motion *::after { animation: none !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+@media (prefers-reduced-motion: reduce) { .workspace-view, .workspace-view * { animation: none !important; transition-duration: .01ms !important; } }
