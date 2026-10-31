@@ -9,7 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as CentresRouteImport } from './routes/centres'
+import { Route as HaulageRouteImport } from './routes/haulage'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as RakesRouteImport } from './routes/rakes'
 import { Route as ReportsRouteImport } from './routes/reports'
@@ -17,9 +19,19 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as VehiclesRouteImport } from './routes/vehicles'
 import { Route as CentreCentreIdSectionRouteImport } from './routes/centre.$centreId.$section'
 
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CentresRoute = CentresRouteImport.update({
   id: '/centres',
   path: '/centres',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HaulageRoute = HaulageRouteImport.update({
+  id: '/haulage',
+  path: '/haulage',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InventoryRoute = InventoryRouteImport.update({
@@ -54,7 +66,9 @@ const CentreCentreIdSectionRoute = CentreCentreIdSectionRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/centres': typeof CentresRoute
+  '/haulage': typeof HaulageRoute
   '/inventory': typeof InventoryRoute
   '/rakes': typeof RakesRoute
   '/reports': typeof ReportsRoute
@@ -63,7 +77,9 @@ export interface FileRoutesByFullPath {
   '/centre/$centreId/$section': typeof CentreCentreIdSectionRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/centres': typeof CentresRoute
+  '/haulage': typeof HaulageRoute
   '/inventory': typeof InventoryRoute
   '/rakes': typeof RakesRoute
   '/reports': typeof ReportsRoute
@@ -73,7 +89,9 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/centres': typeof CentresRoute
+  '/haulage': typeof HaulageRoute
   '/inventory': typeof InventoryRoute
   '/rakes': typeof RakesRoute
   '/reports': typeof ReportsRoute
@@ -84,7 +102,9 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/centres'
+    | '/haulage'
     | '/inventory'
     | '/rakes'
     | '/reports'
@@ -93,7 +113,9 @@ export interface FileRouteTypes {
     | '/centre/$centreId/$section'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/centres'
+    | '/haulage'
     | '/inventory'
     | '/rakes'
     | '/reports'
@@ -102,7 +124,9 @@ export interface FileRouteTypes {
     | '/centre/$centreId/$section'
   id:
     | '__root__'
+    | '/'
     | '/centres'
+    | '/haulage'
     | '/inventory'
     | '/rakes'
     | '/reports'
@@ -112,7 +136,9 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   CentresRoute: typeof CentresRoute
+  HaulageRoute: typeof HaulageRoute
   InventoryRoute: typeof InventoryRoute
   RakesRoute: typeof RakesRoute
   ReportsRoute: typeof ReportsRoute
@@ -123,11 +149,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/centres': {
       id: '/centres'
       path: '/centres'
       fullPath: '/centres'
       preLoaderRoute: typeof CentresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/haulage': {
+      id: '/haulage'
+      path: '/haulage'
+      fullPath: '/haulage'
+      preLoaderRoute: typeof HaulageRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/inventory': {
@@ -176,7 +216,9 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   CentresRoute: CentresRoute,
+  HaulageRoute: HaulageRoute,
   InventoryRoute: InventoryRoute,
   RakesRoute: RakesRoute,
   ReportsRoute: ReportsRoute,
