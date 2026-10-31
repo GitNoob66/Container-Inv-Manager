@@ -1,3 +1,4 @@
+import { SuggestInput } from "@/components/suggest-input";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { api } from "@/lib/api";
@@ -131,22 +132,13 @@ export function ManualEntryFields({
 
       {movementMode === "Road" && show("truck_no") ? (
         <Field label={L("truck_no", "Truck Number")}>
-          <Input
-            list={listId}
+          <SuggestInput
             value={truckNo}
-            className="num uppercase"
+            className="num"
+            options={vehicles.map((v) => v.vehicle_no)}
             placeholder={vehicles.length ? "Pick or type a truck number" : "Type truck number"}
-            onChange={(e) =>
-              set(isOut ? { out_truck_no: e.target.value.toUpperCase() } : { truck_no: e.target.value.toUpperCase() })
-            }
+            onChange={(v) => set(isOut ? { out_truck_no: v } : { truck_no: v })}
           />
-          <datalist id={listId}>
-            {vehicles.map((v) => (
-              <option key={v.id} value={v.vehicle_no}>
-                {v.vehicle_type ?? ""}
-              </option>
-            ))}
-          </datalist>
         </Field>
       ) : null}
 
@@ -185,20 +177,13 @@ export function ManualEntryFields({
 
       {movementMode === "Rail" && show("wagon_no") ? (
         <Field label={L("wagon_no", "Wagon Number")}>
-          <Input
-            list={`wagons-${isOut ? "out" : "in"}`}
-            className="num uppercase"
+          <SuggestInput
+            className="num"
             value={wagonNo}
+            options={wagonOptions}
             placeholder={wagonOptions.length ? "Type or pick a wagon" : "Type wagon number"}
-            onChange={(e) =>
-              set(isOut ? { out_wagon_no: e.target.value.toUpperCase() } : { wagon_no: e.target.value.toUpperCase() })
-            }
+            onChange={(v) => set(isOut ? { out_wagon_no: v } : { wagon_no: v })}
           />
-          <datalist id={`wagons-${isOut ? "out" : "in"}`}>
-            {wagonOptions.map((w) => (
-              <option key={w} value={w} />
-            ))}
-          </datalist>
         </Field>
       ) : null}
 

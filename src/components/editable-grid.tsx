@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { validateContainerNo } from "@/lib/iso6346";
+import { SuggestInput } from "@/components/suggest-input";
 
 export type GridColumn = {
   key: string;
@@ -66,6 +67,31 @@ type RowProps = {
   onEdit: (id: string, key: string | null) => void;
   onCommit: (id: string, key: string, value: string) => void;
 };
+
+function GridSuggestCell({ initial, options, onDone }: { initial: string; options: string[]; onDone: (v: string | null) => void }) {
+  const [v, setV] = useState(initial);
+  const done = useRef(false);
+  const finish = (val: string | null) => {
+    if (done.current) return;
+    done.current = true;
+    onDone(val);
+  };
+  return (
+    <SuggestInput
+      autoFocus
+      value={v}
+      onChange={setV}
+      options={options}
+      className="h-7 text-xs"
+      onPick={(o) => finish(o)}
+      onBlur={(val) => finish(val)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") finish(e.currentTarget.value.toUpperCase());
+        if (e.key === "Escape") finish(null);
+      }}
+    />
+  );
+}
 
 /** One table row. Memoised so ticking a box re-renders only that row. */
 const GridRowView = memo(function GridRowView({
@@ -133,32 +159,30 @@ const GridRowView = memo(function GridRowView({
                     ))}
                   </SelectContent>
                 </Select>
+              ) : col.kind === "suggest" ? (
+                <GridSuggestCell
+                  initial={value}
+                  options={col.options ?? []}
+                  onDone={(v) => {
+                    if (v !== null) onCommit(row.__id, col.key, v);
+                    onEdit(row.__id, null);
+                  }}
+                />
               ) : (
-                <>
-                  <Input
-                    autoFocus
-                    type={inputType(col.kind)}
-                    list={col.kind === "suggest" ? `dl-${col.key}` : undefined}
-                    defaultValue={value}
-                    className={cn("h-7 text-xs", col.kind === "suggest" && "uppercase")}
-                    onBlur={(e) => {
-                      const v = col.kind === "suggest" ? e.target.value.toUpperCase() : e.target.value;
-                      onCommit(row.__id, col.key, v);
-                      onEdit(row.__id, null);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") e.currentTarget.blur();
-                      if (e.key === "Escape") onEdit(row.__id, null);
-                    }}
-                  />
-                  {col.kind === "suggest" ? (
-                    <datalist id={`dl-${col.key}`}>
-                      {(col.options ?? []).map((o) => (
-                        <option key={o} value={o} />
-                      ))}
-                    </datalist>
-                  ) : null}
-                </>
+                <Input
+                  autoFocus
+                  type={inputType(col.kind)}
+                  defaultValue={value}
+                  className="h-7 text-xs"
+                  onBlur={(e) => {
+                    onCommit(row.__id, col.key, e.target.value);
+                    onEdit(row.__id, null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
+                    if (e.key === "Escape") onEdit(row.__id, null);
+                  }}
+                />
               )
             ) : (
               <span
@@ -466,25 +490,10 @@ export function EditableGrid({
                 ))}
               </SelectContent>
             </Select>
+          ) : fillColumn?.kind === "suggest" ? (
+            <SuggestInput autoFocus value={fillValue} onChange={setFillValue} options={fillColumn.options ?? []} />
           ) : (
-            <>
-              <Input
-                autoFocus
-                type={inputType(fillColumn?.kind)}
-                list={fillColumn?.kind === "suggest" ? "dl-fill" : undefined}
-                value={fillValue}
-                onChange={(e) =>
-                  setFillValue(fillColumn?.kind === "suggest" ? e.target.value.toUpperCase() : e.target.value)
-                }
-              />
-              {fillColumn?.kind === "suggest" ? (
-                <datalist id="dl-fill">
-                  {(fillColumn.options ?? []).map((o) => (
-                    <option key={o} value={o} />
-                  ))}
-                </datalist>
-              ) : null}
-            </>
+            <Input autoFocus type={inputType(fillColumn?.kind)} value={fillValue} onChange={(e) => setFillValue(e.target.value)} />
           )}
           <DialogFooter>
             <Button variant="ghost" onClick={() => setFillColumn(null)}>
